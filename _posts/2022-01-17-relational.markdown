@@ -53,7 +53,7 @@ However, in practice, people are not just comparing data models but actual datab
 
 ## Operations on Relations
 
-Now we have a relation that describes that data we have, which is great. However, a database needs to be queried to be useful (otherwise it's indistinguishable from just writing to /dev/null). Dr. Codd then went on in details about a set of operations can be performed on relations — _projection(π)_, _natural_ _join(\*)_, and _restriction(|)_.
+Now we have a relation that describes that data we have, which is great. However, a database needs to be queried to be useful (otherwise it's indistinguishable from just writing to /dev/null). Dr. Codd then went on in details about a set of operations can be performed on relations — _projection(π)_, _natural_ _join(\*)_, and _restriction(\|)_.
 
 A _projection_ is an operation that selects a few columns from the operand _relation_. It's notation is
 
@@ -77,9 +77,9 @@ For _restriction,_
 
 <!--kg-card-begin: markdown-->
 
-R<sub>L</sub>|<sub>M</sub>S (the L,M restriction of R by S) is the maximal subset R' of R such that π<sub>L</sub>(R') = π<sub>M</sub>(S).
+R<sub>L</sub>\|<sub>M</sub>S (the L,M restriction of R by S) is the maximal subset R' of R such that π<sub>L</sub>(R') = π<sub>M</sub>(S).
 
-E.g. let R be a relation for employment, π<sub>L</sub>(R) be all the employee names, and π<sub>M</sub>(S) be one tuple \<Bob\>. Then R<sub>L</sub>|<sub>M</sub>S will give me Bob's employment tuple. _Restriction_ is more general of course as it can be applied to multiple columns.
+E.g. let R be a relation for employment, π<sub>L</sub>(R) be all the employee names, and π<sub>M</sub>(S) be one tuple \<Bob\>. Then R<sub>L</sub>\|<sub>M</sub>S will give me Bob's employment tuple. _Restriction_ is more general of course as it can be applied to multiple columns.
 
 <!--kg-card-end: markdown-->
 
@@ -89,7 +89,7 @@ My previous example for restriction is essentially a _selection_ for Bob's emplo
 
 <!--kg-card-begin: markdown-->
 
-R<sub>L</sub>|<sub>1</sub>S, where _R_ is the employment relation, π<sub>L</sub>(R) returns the age column of _R_, and _S_ = {x | x \> 30}.
+R<sub>L</sub>\|<sub>1</sub>S, where _R_ is the employment relation, π<sub>L</sub>(R) returns the age column of _R_, and _S_ = {x \| x \> 30}.
 
 <!--kg-card-end: markdown-->
 
@@ -101,7 +101,7 @@ A set of relations is redundant if a relation that has a projection which can be
 
 <!--kg-card-begin: markdown-->
 
-π<sub>34</sub>(employee) = π<sub>12</sub>(employee)<sub>1</sub>|<sub>1</sub>π<sub>3</sub>(employee).
+π<sub>34</sub>(employee) = π<sub>12</sub>(employee)<sub>1</sub> \| <sub>1</sub>π<sub>3</sub>(employee).
 
 <!--kg-card-end: markdown-->
 

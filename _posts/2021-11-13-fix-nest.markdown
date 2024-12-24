@@ -23,12 +23,11 @@ The most obvious next step to do is Googling. Not surprisingly, I found people h
 
 So I had it delivered. The manual says nothing about how this thing works at all. But it has detailed steps of how to connect wires at the zone control. Sure, except it didn't work. It would call heat _all the time_ even when the thermostat was not calling for heat. So far I had been doing the software engineering equivalent of stackoverflow-copy-paste. I just want the problem fixed. Time to sit down and learn about how HVAC actually works, and how is it setup at my home.
 
-<figure class="kg-card kg-image-card kg-card-hascaption"><img src=" __GHOST_URL__ /content/images/2021/11/29437996._UY788_SS788_.jpg" class="kg-image" alt loading="lazy" width="788" height="788" srcset=" __GHOST_URL__ /content/images/size/w600/2021/11/29437996._UY788_SS788_.jpg 600w, __GHOST_URL__ /content/images/2021/11/29437996._UY788_SS788_.jpg 788w" sizes="(min-width: 720px) 720px"><figcaption>from https://www.goodreads.com/book/show/29437996-copying-and-pasting-from-stack-overflow</figcaption></figure>
 ## HVAC
 
 HVAC systems are actually very simple — well at least the thermostat controlling part of it is very simple. Using cooling as an example, thermostat has Rc and Y two wires connected to a condenser, powered with 24VAC. When a thermostat is not calling for cooling, there should be 24VAC between Rc and Y (they are disconnected). When Rc and Y are shorted, which happens when a thermostat is calling for cooling, there will be a 24VAC between Y and COM (common), which is used to energize a relay switch that completes the 120VAC condenser circuit (as shown in the diagram below).
 
-<figure class="kg-card kg-image-card kg-card-hascaption"><img src=" __GHOST_URL__ /content/images/2021/11/WLJeu.png" class="kg-image" alt loading="lazy" width="436" height="329"><figcaption>The idea is the same for boiler (https://diy.stackexchange.com/questions/29639/how-to-wire-a-relay-for-an-evaporative-cooler-to-a-thermostat)</figcaption></figure>
+![The idea is the same for boiler (https://diy.stackexchange.com/questions/29639/how-to-wire-a-relay-for-an-evaporative-cooler-to-a-thermostat)](/assets/hvac.png)
 
 Now let's measure the voltage.
 
@@ -42,7 +41,7 @@ I followed &nbsp;wires in the house and learned about the HVAC setup in the hous
 
 First, let's add a solid C wire. [Venstar Add-a-wire](https://venstar.com/thermostats/accessories/add-a-wire/) can add a C wire without adding a new wire from zone control all the way to thermostat. (I am not associated with the product in anyway other than being a happy customer.) There are plenty of videos on the internet that explains how to install it. The idea is that you will multiplex two signals e.g. Y and G over a single physical wire behind your wall, which frees up one physical wire that can be used for the C-wire. But how does it work exactly? I found this answer on the internet.
 
-<figure class="kg-card kg-image-card kg-card-hascaption"><img src=" __GHOST_URL__ /content/images/2021/11/IMG_1821.JPG" class="kg-image" alt loading="lazy" width="1900" height="1288" srcset=" __GHOST_URL__ /content/images/size/w600/2021/11/IMG_1821.JPG 600w, __GHOST_URL__ /content/images/size/w1000/2021/11/IMG_1821.JPG 1000w, __GHOST_URL__ /content/images/size/w1600/2021/11/IMG_1821.JPG 1600w, __GHOST_URL__ /content/images/2021/11/IMG_1821.JPG 1900w" sizes="(min-width: 720px) 720px"><figcaption>https://www.eevblog.com/forum/projects/how-does-the-venstar-add-a-wire-work/</figcaption></figure>
+![add a wire](/assets/add-a-wire.JPG)
 
 The diagram left out Rc which energizes the 24VAC control signal. You can imagine that that Rc is connected to G and Y2 on both sides. When the thermostat is trying to call cooling (Y), it will complete the Y2 circuit. But if we simply multiplex over two pairs of diodes, you would only get half sine wave outputs for Y and G. To get full sign wave at the output, that drives the relay switch, the add-a-wire box installed in the condenser (right hand side), has two additional replay switches. So when Y2 is energized, the relay switch will close, Y2 output will get the full sine wave from COM (common). Basically, Y2 and G now only sends signals to the add-a-wire control, which then sends full sine wave output from COM to the actual relay switch at the condenser.
 
@@ -52,13 +51,14 @@ After it's installed, the problem went away for about a week. The theory is that
 
 Given the problem is caused entirely by having two transformers, what if we just remove one entirely? I found this helpful post on [Reddit](https://www.reddit.com/r/Nest/comments/9hp0lb/fixed_nest_thermostat_causing_chattering_relay_on/), which suggests adding an isolation relay on boiler. The idea is that Nest can be powered entirely on the AC transformer, and we can remove the Rh from the thermostat entirely. [Ecobee](https://support.ecobee.com/s/articles/ecobee-thermostat-installation-with-an-isolation-relay) has the same idea posted as well.
 
-<figure class="kg-card kg-image-card kg-card-hascaption"><img src=" __GHOST_URL__ /content/images/2021/11/Screenshot-from-2021-11-14-20-41-28.png" class="kg-image" alt loading="lazy" width="1750" height="1244" srcset=" __GHOST_URL__ /content/images/size/w600/2021/11/Screenshot-from-2021-11-14-20-41-28.png 600w, __GHOST_URL__ /content/images/size/w1000/2021/11/Screenshot-from-2021-11-14-20-41-28.png 1000w, __GHOST_URL__ /content/images/size/w1600/2021/11/Screenshot-from-2021-11-14-20-41-28.png 1600w, __GHOST_URL__ /content/images/2021/11/Screenshot-from-2021-11-14-20-41-28.png 1750w" sizes="(min-width: 720px) 720px"><figcaption>https://support.ecobee.com/s/articles/ecobee-thermostat-installation-with-an-isolation-relay</figcaption></figure>
+![https://support.ecobee.com/s/articles/ecobee-thermostat-installation-with-an-isolation-relay](/assets/isolation-relay.png)
 
 When the thermostat tries to call heat, it will put 24VAC on W1 (relative to C), As a result, it will energize the isolation relay, which physically shorts T & T terminals at the boiler. This is a great idea, as it guarantees to solve the problem entirely. However, it requires the isolation relay to be connected to C (the C from AC). My boiler is in the basement, and the AC is on the second floor. Then it dawned on me that I could repurpose the no-longer-needed Rh wire to send C all the way from the second floor to my basement.
 
 The final result looks like this. And it works beautifully.
 
-<figure class="kg-card kg-image-card"><img src=" __GHOST_URL__ /content/images/2021/11/IMG_2018.jpg" class="kg-image" alt loading="lazy" width="2000" height="2667" srcset=" __GHOST_URL__ /content/images/size/w600/2021/11/IMG_2018.jpg 600w, __GHOST_URL__ /content/images/size/w1000/2021/11/IMG_2018.jpg 1000w, __GHOST_URL__ /content/images/size/w1600/2021/11/IMG_2018.jpg 1600w, __GHOST_URL__ /content/images/2021/11/IMG_2018.jpg 2268w" sizes="(min-width: 720px) 720px"></figure><figure class="kg-card kg-image-card"><img src=" __GHOST_URL__ /content/images/2021/11/IMG_2013.jpg" class="kg-image" alt loading="lazy" width="2000" height="2667" srcset=" __GHOST_URL__ /content/images/size/w600/2021/11/IMG_2013.jpg 600w, __GHOST_URL__ /content/images/size/w1000/2021/11/IMG_2013.jpg 1000w, __GHOST_URL__ /content/images/size/w1600/2021/11/IMG_2013.jpg 1600w, __GHOST_URL__ /content/images/size/w2400/2021/11/IMG_2013.jpg 2400w" sizes="(min-width: 720px) 720px"></figure>
+![nest](/assets/nest.jpg)
+![zone control](/assets/zone-control.jpg)
 
 _Debugging a system is probably the best way to learn how it actually works._
 

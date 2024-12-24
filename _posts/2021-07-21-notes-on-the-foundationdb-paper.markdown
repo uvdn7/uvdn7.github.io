@@ -29,7 +29,7 @@ We will come back to all these jaw-dropping claims. If these claims don't excite
 
 ## Architecture
 
-![Screen-Shot-2021-07-05-at-11.01.20-AM]( __GHOST_URL__ /content/images/2021/07/Screen-Shot-2021-07-05-at-11.01.20-AM.png)
+![fdb1](/assets/fdb1.png)
 
 FDB takes the idea of microservice to the extreme (they call it decoupling). Almost every single functionality is handled by a distinct service (stateful or stateless). Embrace yourself for many names for different roles.
 
@@ -44,8 +44,8 @@ FDB breaks the Data Plane into three parts, Transaction System, Log System and S
 ## Transaction Management
 
 1. A client is always connected to a Proxy, which communicates with FDB internal services.
-2. The Proxy will get a read-version in the form of HLC (hybrid logical clock) from the _Sequencer_. Notice that there's only one (not logical) physical _Sequencer_ in the system, which serves as a single point of serialization (ordering). The _Sequencer_ conceptually has the following API, which keeps producing monotonically increasing HLCs(or LSNs).  
- ![Screen-Shot-2021-07-17-at-11.58.41-PM]( __GHOST_URL__ /content/images/2021/07/Screen-Shot-2021-07-17-at-11.58.41-PM.png) The singularity of the _Sequencer_ is critical, as it provides _the_ ordering of all relevant events of an entire FDB deployment. HLC and LSN are interchangeable for the rest of this post.
+2. The Proxy will get a read-version in the form of HLC (hybrid logical clock) from the _Sequencer_. Notice that there's only one (not logical) physical _Sequencer_ in the system, which serves as a single point of serialization (ordering). The _Sequencer_ conceptually has the following API, which keeps producing monotonically increasing HLCs(or LSNs). The singularity of the _Sequencer_ is critical, as it provides _the_ ordering of all relevant events of an entire FDB deployment. HLC and LSN are interchangeable for the rest of this post.
+![fdb2](/assets/fdb2.png)
 3. The client then issues reads to _Storage_ with the specific read-version, acquired from the _Sequencer_. Storage System will return data at the specific point-in-time indicated by the read-version (an HLC) – MVCC.
 4. The client then asks _Sequencer_ again for a commit-version.
 5. Next, it sends the write-set _and_ the read-set to the _Resolver_. _Resolvers_ are range-sharded and they keep a short history of recent writes. Here, it detects if there are any conflicts (i.e. if the data read earlier in the transaction has changed or not, between `[read-version, commit-version]`).
@@ -72,7 +72,7 @@ I know you are probably thinking about what if _Sequencer_ or _Resolver_ goes do
 
 ## Logging Protocol
 
-![Screen-Shot-2021-07-16-at-11.57.52-AM]( __GHOST_URL__ /content/images/2021/07/Screen-Shot-2021-07-16-at-11.57.52-AM.png)
+![fbd3](/assets/fdb3.png)
 
 FDB's logging protocol, at first glance, seems pretty straightforward. It has a group of logs, and a separate group of storage servers with distinct replication factors and topologies – another example of physical decoupling in FDB. If you dive a little deeper, you will notice that things are much more interesting.
 
@@ -105,7 +105,7 @@ Finally, the real fun begins. What happens if the _Sequencer_ fails? _Resolvers_
 
 Unlike other fault tolerance algorithms, e.g. Paxos, **FDB's recovery process has _downtime_** – from the shutdown of old _LogServers_ to when the new _Sequencer_ starts accepting new transactions. One can argue that this is not really _fault tolerant_. I personally think it's totally fine to have partial downtime to heal a system (given a short one, which is the case for FDB), e.g. unavailability for a single shard. It's not like systems such as Paxos or Raft have 100% availability even when the simple majority of hosts are always up and running. However FDB has only _one_ logical shard. Its recovery process causes downtime for the entire deployment and the entire key space.
 
-![Screen-Shot-2021-07-19-at-11.33.17-AM]( __GHOST_URL__ /content/images/2021/07/Screen-Shot-2021-07-19-at-11.33.17-AM.png)
+![fbd4](/assets/fdb4.png)
 
 P50 downtime for FDB's recovery process is 3.08s. That means no one can write to FDB at all during this window. The paper argues clients can still read from storage nodes unaffected.
 
@@ -119,7 +119,7 @@ _Proxies_ are easy to recover, as they are mostly stateless (just keeping track 
 
 #### Log Recovery
 
-![Screen-Shot-2021-07-20-at-3.15.38-PM]( __GHOST_URL__ /content/images/2021/07/Screen-Shot-2021-07-20-at-3.15.38-PM.png)
+![fbd5](/assets/fdb5.png)
 
 For a LogServer deployment with _m_ hosts and replication factor _k_, here's how the algorithm looks like:
 
@@ -143,7 +143,7 @@ Notice that any log message arrived at the logs have already passed the conflict
 
 Let's take a closer look at this diagram.
 
-![Screen-Shot-2021-07-20-at-11.16.41-PM]( __GHOST_URL__ /content/images/2021/07/Screen-Shot-2021-07-20-at-11.16.41-PM.png)
+![fbd6](/assets/fdb6.png)
 
 For it to be correct (that we can safely discard data after _RV_ and preserve data before _RV_), the following conditions need to be met:
 

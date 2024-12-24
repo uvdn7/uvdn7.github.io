@@ -9,28 +9,6 @@ tags:
 
 This is the third post of a series that I am making on C++ exceptions.
 
-<figure class="kg-card kg-bookmark-card"><a class="kg-bookmark-container" href=" __GHOST_URL__ /cpp-exception-1/"><div class="kg-bookmark-content">
-<div class="kg-bookmark-title">C++ exception (1) — zero-cost exception handling</div>
-<div class="kg-bookmark-description">This is the first post of a series I am making on C++ exceptions. C++ exception (1) — zero-cost exception handlingThis is the first post of a series I am making on C++ exceptions. C++ exception (2) — throwing an exceptionThis is the second post of a series that I am making</div>
-<div class="kg-bookmark-metadata">
-<img class="kg-bookmark-icon" src=" __GHOST_URL__ /favicon.ico" alt=""><span class="kg-bookmark-author">Lu's blog</span><span class="kg-bookmark-publisher">Lu Pan</span>
-</div>
-</div>
-<div class="kg-bookmark-thumbnail"><img src="https://images.unsplash.com/photo-1498084393753-b411b2d26b34?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=MnwxMTc3M3wwfDF8c2VhcmNofDF8fGZhc3R8ZW58MHx8fHwxNjM3MzM0MjYy&amp;ixlib=rb-1.2.1&amp;q=80&amp;w=2000" alt=""></div></a></figure><figure class="kg-card kg-bookmark-card"><a class="kg-bookmark-container" href=" __GHOST_URL__ /cpp-exception-2/"><div class="kg-bookmark-content">
-<div class="kg-bookmark-title">C++ exception (2) — throwing an exception</div>
-<div class="kg-bookmark-description">This is the second post of a series that I am making on C++ exceptions. C++ exception (1) — zero-cost exception handlingThis is the first post of a series I am making on C++ exceptions. C++ exception (1) — zero-cost exception handlingThis is the first post of a series I am making</div>
-<div class="kg-bookmark-metadata">
-<img class="kg-bookmark-icon" src=" __GHOST_URL__ /favicon.ico" alt=""><span class="kg-bookmark-author">Lu's blog</span><span class="kg-bookmark-publisher">Lu Pan</span>
-</div>
-</div>
-<div class="kg-bookmark-thumbnail"><img src="https://images.unsplash.com/photo-1522978413910-e3889a1343db?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=MnwxMTc3M3wwfDF8c2VhcmNofDJ8fHRocm93fGVufDB8fHx8MTYzNzUxNDYzMQ&amp;ixlib=rb-1.2.1&amp;q=80&amp;w=2000" alt=""></div></a></figure><figure class="kg-card kg-bookmark-card"><a class="kg-bookmark-container" href=" __GHOST_URL__ /cpp-exception-3/"><div class="kg-bookmark-content">
-<div class="kg-bookmark-title">C++ exception (3) – catching an exception</div>
-<div class="kg-bookmark-description">This is the third post of a series that I am making on C++ exceptions. https://blog.the-pans.com/cpp-exception-1/ https://blog.the-pans.com/cpp-exception-2/ Personality RoutineTo understand how an exception is caught in C++, we need to understand a little more about personality routine. Personality…</div>
-<div class="kg-bookmark-metadata">
-<img class="kg-bookmark-icon" src=" __GHOST_URL__ /favicon.ico" alt=""><span class="kg-bookmark-author">Lu's blog</span><span class="kg-bookmark-publisher">Lu Pan</span>
-</div>
-</div>
-<div class="kg-bookmark-thumbnail"><img src="https://images.unsplash.com/photo-1590502160462-58b41354f588?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=MnwxMTc3M3wwfDF8c2VhcmNofDN8fGNhdGNofGVufDB8fHx8MTYzNzU1OTc5MA&amp;ixlib=rb-1.2.1&amp;q=80&amp;w=2000" alt=""></div></a></figure>
 ## Personality Routine
 
 To understand how an exception is caught in C++, we need to understand a little more about _personality routine_. Personality routine at a high level is basically a language specific callback that allows an unwind library (language agnostic) to perform the unwind process. The Itanium ABI specifies the personality routine interface, which looks like the following. (The personality routine implemented in `libc++` and `libstdc++` (`libc++abi` and `libsupc++` to be precise) is called `__gxx_personality_v0`.)

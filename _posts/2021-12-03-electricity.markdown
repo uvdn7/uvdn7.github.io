@@ -12,7 +12,6 @@ Derek posted a video on his Veritasium channel about the [big misconception abou
 
 <figure class="kg-card kg-embed-card"><iframe width="200" height="113" src="https://www.youtube.com/embed/bHIhgxav9LY?start=344&amp;feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></figure>
 ## A thought experiment
-<figure class="kg-card kg-image-card kg-card-hascaption"><img src=" __GHOST_URL__ /content/images/2021/12/Screen-Shot-2021-12-03-at-4.52.43-PM.png" class="kg-image" alt loading="lazy" width="1608" height="506" srcset=" __GHOST_URL__ /content/images/size/w600/2021/12/Screen-Shot-2021-12-03-at-4.52.43-PM.png 600w, __GHOST_URL__ /content/images/size/w1000/2021/12/Screen-Shot-2021-12-03-at-4.52.43-PM.png 1000w, __GHOST_URL__ /content/images/size/w1600/2021/12/Screen-Shot-2021-12-03-at-4.52.43-PM.png 1600w, __GHOST_URL__ /content/images/2021/12/Screen-Shot-2021-12-03-at-4.52.43-PM.png 1608w" sizes="(min-width: 720px) 720px"><figcaption>https://www.youtube.com/watch?v=bHIhgxav9LY&amp;t=344s</figcaption></figure>
 
 If we have a circuit that's `3*10^8 m` long, and only `1m` wide, how long does it take to turn on the light that's `1m` away from the battery?
 

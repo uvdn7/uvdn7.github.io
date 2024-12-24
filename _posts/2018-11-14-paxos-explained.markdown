@@ -26,7 +26,7 @@ On a side note, to be honest, I think trying to use voting as an example to expl
 
 ## Single Acceptor
 
-![Screen-Shot-2018-11-13-at-11.17.43-PM]( __GHOST_URL__ /content/images/2018/11/Screen-Shot-2018-11-13-at-11.17.43-PM.png)  
+![single acceptor](/assets/single_acceptor.png)
 With a cluster of `2F+1` servers, what happens if we always make one certain box to accept proposals. And whatever proposal being accepted by that box is chosen.
 
 The problem of this approach is that a single down box can make the service unavailable. But the requirement says the service needs to be up and running as long as majority of the servers are running (`F+1` in this case).
@@ -50,7 +50,7 @@ We have already made some progress! **If any proposal's accepted by `F+1` server
 Now let's see how acceptors should decide if to accept a proposal or not.
 
 _Accept first proposal only?_  
- ![Screen-Shot-2018-11-13-at-11.17.27-PM]( __GHOST_URL__ /content/images/2018/11/Screen-Shot-2018-11-13-at-11.17.27-PM.png)
+ ![paxos space time](/assets/paxos-space-time.png)
 
 It wouldn't work, because we can end up never have any value chosen like the case above. This violates liveness requirement.
 
@@ -59,7 +59,7 @@ It doesn't make sense to say accept second proposal or anything like that becaus
 So we have to accept the first proposal, but maybe not first proposal only.
 
 _Accept every proposals?_  
- ![Screen-Shot-2018-11-13-at-11.31.11-PM]( __GHOST_URL__ /content/images/2018/11/Screen-Shot-2018-11-13-at-11.31.11-PM.png)  
+ ![paxos space time 2](/assets/paxos-space-time-2.png)
 This would violate the safety requirement as we can end up have more than one value chosen.
 
 ## Core
@@ -70,9 +70,9 @@ Here comes the trick, which I think is THE MOST interesting part of Paxos.
 
 This means a two-phase protocol would be needed. In the first phase, proposers need to figure out if any value has already been chosen. And propose in the second phase.
 
-If you are a distributed system veteran you must have already noticed one key word in the previous statement. And it's "future". I reviewed [Time and Order]( __GHOST_URL__ /time-and-order/) before. Distributed system is all about ordering. "future" here implies ordering (happen-before relationship). So we have to **order** all proposals. Then in the example below, we can reject `red` because we know `blue` is chosen and `red` is an old proposal.
+If you are a distributed system veteran you must have already noticed one key word in the previous statement. And it's "future". I reviewed [Time and Order](/time-and-order/) before. Distributed system is all about ordering. "future" here implies ordering (happen-before relationship). So we have to **order** all proposals. Then in the example below, we can reject `red` because we know `blue` is chosen and `red` is an old proposal.
 
-![Screen-Shot-2018-11-13-at-11.39.37-PM]( __GHOST_URL__ /content/images/2018/11/Screen-Shot-2018-11-13-at-11.39.37-PM.png)
+ ![paxos space time 3](/assets/paxos-space-time-3.png)
 
 #### Ballot Number
 
@@ -85,7 +85,8 @@ Now we are all set up to describe the real two-phase Paxos protocol. We will cal
 1. learn about any value that's already chosen
 2. prevent acceptors accepting any older proposals (very much like the RESERVE step in Two Phase Commit)
 
-![Screen-Shot-2018-11-13-at-11.53.52-PM]( __GHOST_URL__ /content/images/2018/11/Screen-Shot-2018-11-13-at-11.53.52-PM.png)  
+![paxos](/assets/paxos.png)
+
 Acceptor has to durably store a few things
 
 - `minProposal`
@@ -104,7 +105,7 @@ In step `3` and `4`, a proposer will change its proposal to the latest accepted 
 _Why keep track of `minProposal`?_  
 There can be two racing proposals in prepare phase while nothing has been accepted yet. This means they will both move to accept phase. Thanks to the total ordering we have for all proposals and the `F+1` requirement, at least one acceptor will see the newer proposal and reject the `accept` message from the losing/older proposal. The invariant here is that `minProposal >= acceptedProposal`.
 
-![Screen-Shot-2018-11-14-at-12.28.11-AM]( __GHOST_URL__ /content/images/2018/11/Screen-Shot-2018-11-14-at-12.28.11-AM.png)
+![paxos space time 4](/assets/paxos-space-time-4.png)
 
 This is probably the most interesting case, as the second proposer didn't see the previous accepted value and a value was not chosen at the time in prepare phase. In this case, it will go ahead and send `accept(Y)` to other servers. Because `S3` has _promised_ that it will only accept proposals later than `4.5`, it rejects `X`. If we don't keep track of `minProposal`, `X` will be accepted by `S3`. Then both `X` and `Y` would have been accepted by three servers and considered chosen, which violates the safety requirement.
 

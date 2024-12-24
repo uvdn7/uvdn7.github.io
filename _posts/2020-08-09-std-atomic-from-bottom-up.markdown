@@ -18,11 +18,11 @@ tags:
 
 Data race doesn't exist until we had computers with multiple cores and programs with multiple threads.
 
-When there's only a single core, there's a single copy of data from its perspective – its L1 cache. With multiple cores, each having their own L1 cache and L2 cache, keeping data in multiple caches in sync is a distributed system problem. Just like it's always easier to reason about if there's a single instance of MySQL that has all of your data and you don't have to worry about sharding and replication (and this is why [Spanner]( __GHOST_URL__ /notes-on-the-spanner/) is popular).
+When there's only a single core, there's a single copy of data from its perspective – its L1 cache. With multiple cores, each having their own L1 cache and L2 cache, keeping data in multiple caches in sync is a distributed system problem. Just like it's always easier to reason about if there's a single instance of MySQL that has all of your data and you don't have to worry about sharding and replication (and this is why [Spanner](/notes-on-the-spanner/) is popular).
 
 Keeping multiple CPU caches in sync is what known as [cache coherence](https://en.wikipedia.org/wiki/Cache_coherence).
 
-![370px-Cache_Coherency_Generic]( __GHOST_URL__ /content/images/2020/08/370px-Cache_Coherency_Generic.png)
+![cache coherence](/assets/cache_coherence.png)
 
 Cache is coherent if it meets the following requirements,
 
@@ -152,7 +152,7 @@ gets compiled to the following assembly on GCC
 
 Now let's switch to C++ and talk about high level memory order. Acquire-read disallows reordering reads or writes ahead of it, _in program order_. Release-write disallows reordering reads or writes after it, _in program order_. It says nothing about fences, which is just implementation detail. In practice it looks like ([https://preshing.com/20120913/acquire-and-release-semantics/](https://preshing.com/20120913/acquire-and-release-semantics/)):
 
-![acq-rel-barriers]( __GHOST_URL__ /content/images/2020/08/acq-rel-barriers.png)
+![acquire release](/assets/acquire-release.png)
 
 On x86 this is the default behavior without extra memory barriers needed. With weak memory model, [reorder can happen](https://preshing.com/20121019/this-is-why-they-call-it-a-weakly-ordered-cpu/).
 

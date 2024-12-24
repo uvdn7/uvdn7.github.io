@@ -9,29 +9,6 @@ tags:
 
 This is the first post of a series I am making on C++ exceptions.
 
-<figure class="kg-card kg-bookmark-card"><a class="kg-bookmark-container" href=" __GHOST_URL__ /cpp-exception-1/"><div class="kg-bookmark-content">
-<div class="kg-bookmark-title">C++ exception (1) — zero-cost exception handling</div>
-<div class="kg-bookmark-description">This is the first post of a series I am making on C++ exceptions. C++ exception (2) — throwing an exceptionThis is the second post of a series that I am making on C++ exceptions. The following assumes you have read the first post already. Now we are warmed up with</div>
-<div class="kg-bookmark-metadata">
-<img class="kg-bookmark-icon" src=" __GHOST_URL__ /favicon.ico" alt=""><span class="kg-bookmark-author">Lu's blog</span><span class="kg-bookmark-publisher">Lu Pan</span>
-</div>
-</div>
-<div class="kg-bookmark-thumbnail"><img src="https://images.unsplash.com/photo-1498084393753-b411b2d26b34?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=MnwxMTc3M3wwfDF8c2VhcmNofDF8fGZhc3R8ZW58MHx8fHwxNjM3MzM0MjYy&amp;ixlib=rb-1.2.1&amp;q=80&amp;w=2000" alt=""></div></a></figure><figure class="kg-card kg-bookmark-card"><a class="kg-bookmark-container" href=" __GHOST_URL__ /cpp-exception-2/"><div class="kg-bookmark-content">
-<div class="kg-bookmark-title">C++ exception (2) — throwing an exception</div>
-<div class="kg-bookmark-description">This is the second post of a series that I am making on C++ exceptions. The following assumes you have read the first post already. Now we are warmed up with some assembly reading. Let the fun begin. What happens when test doesn’t pass and it throws an exception? func(</div>
-<div class="kg-bookmark-metadata">
-<img class="kg-bookmark-icon" src=" __GHOST_URL__ /favicon.ico" alt=""><span class="kg-bookmark-author">Lu's blog</span><span class="kg-bookmark-publisher">Lu Pan</span>
-</div>
-</div>
-<div class="kg-bookmark-thumbnail"><img src="https://images.unsplash.com/photo-1522978413910-e3889a1343db?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=MnwxMTc3M3wwfDF8c2VhcmNofDJ8fHRocm93fGVufDB8fHx8MTYzNzUxNDYzMQ&amp;ixlib=rb-1.2.1&amp;q=80&amp;w=2000" alt=""></div></a></figure><figure class="kg-card kg-bookmark-card"><a class="kg-bookmark-container" href=" __GHOST_URL__ /cpp-exception-3/"><div class="kg-bookmark-content">
-<div class="kg-bookmark-title">C++ exception (3) – catching an exception</div>
-<div class="kg-bookmark-description">This is the third post of a series that I am making on C++ exceptions. C++ exception (1) — zero-cost exception handlingThis is the first post of a series I am making on C++ exceptions. C++ exception (1) — zero-cost exception handlingThis is the first post of a series I am making</div>
-<div class="kg-bookmark-metadata">
-<img class="kg-bookmark-icon" src=" __GHOST_URL__ /favicon.ico" alt=""><span class="kg-bookmark-author">Lu's blog</span><span class="kg-bookmark-publisher">Lu Pan</span>
-</div>
-</div>
-<div class="kg-bookmark-thumbnail"><img src="https://images.unsplash.com/photo-1590502160462-58b41354f588?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=MnwxMTc3M3wwfDF8c2VhcmNofDN8fGNhdGNofGVufDB8fHx8MTYzNzU1OTc5MA&amp;ixlib=rb-1.2.1&amp;q=80&amp;w=2000" alt=""></div></a></figure>
-
 When people say "C++ exceptions are slow", what they really meant is that throwing an exception in C++ is slow. C++'s exception handling has zero-cost when there are no exceptions. Let's look at a very simple example.
 
 <!--kg-card-begin: markdown-->
