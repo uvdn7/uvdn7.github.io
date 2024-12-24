@@ -79,4 +79,4 @@ Usually a state machine has two parts – an initial state, and a state transiti
 
 The pretty printed version looks like the following.
 
-<figure class="kg-card kg-image-card"><img src=" __GHOST_URL__ /content/images/2023/01/Screen-Shot-2023-01-11-at-1.21.57-PM.png" class="kg-image" alt loading="lazy" width="470" height="394"></figure>
+![tla](/assets/tla2.png)

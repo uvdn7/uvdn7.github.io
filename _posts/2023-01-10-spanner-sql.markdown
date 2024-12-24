@@ -19,7 +19,7 @@ I like how the paper goes through several practical techniques in building a dis
 
 They explicitly try to make Spanner work well for both OLTP and OLAP workloads, which is ambitious given Stonebraker famously said that one size does not fit all.
 
-<figure class="kg-card kg-image-card"><img src=" __GHOST_URL__ /content/images/2023/01/324649554_725029758887107_1118418123568972738_n.png" class="kg-image" alt loading="lazy" width="996" height="664" srcset=" __GHOST_URL__ /content/images/size/w600/2023/01/324649554_725029758887107_1118418123568972738_n.png 600w, __GHOST_URL__ /content/images/2023/01/324649554_725029758887107_1118418123568972738_n.png 996w" sizes="(min-width: 720px) 720px"></figure>
+![spanner_sql1](/assets/spanner_sql1.png)
 
 The paper has no experiments or benchmark results, presumably because Ressi, their columnar store, was not rolled out yet. Although the paper advocates reducing burdens on customers, it seems to be non-trivial for the customers to set up the schemas optimally and write queries that can be optimized and distributed for better performance, because   
 - Distributed Union pull-up only works when the operator is "partitionable";  
@@ -29,7 +29,7 @@ The paper has no experiments or benchmark results, presumably because Ressi, the
 
 As a result, Spanner engineers have to review schema designs from users.
 
-<figure class="kg-card kg-image-card"><img src=" __GHOST_URL__ /content/images/2023/01/324969681_933601757544951_7352823040086432700_n.png" class="kg-image" alt loading="lazy" width="940" height="450" srcset=" __GHOST_URL__ /content/images/size/w600/2023/01/324969681_933601757544951_7352823040086432700_n.png 600w, __GHOST_URL__ /content/images/2023/01/324969681_933601757544951_7352823040086432700_n.png 940w" sizes="(min-width: 720px) 720px"></figure>
+![spanner_sql2](/assets/spanner_sql2.png)
 
 I have never used Spanner myself. I am curious about people's experience from using Cloud Spanner.
 

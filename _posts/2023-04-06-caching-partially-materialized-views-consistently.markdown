@@ -32,17 +32,17 @@ The [Noria](https://www.usenix.org/conference/osdi18/presentation/gjengset) pape
 
 Noria intercepts all database queries – it sits in between clients and the database. To use it, a user just needs to define the natural parameterized query (notice the `?` mark in the example below) he would use, as if he is querying a normalized database. There is little to none application code change required.
 
-<figure class="kg-card kg-image-card kg-card-hascaption"><img src=" __GHOST_URL__ /content/images/2023/04/Screenshot-2023-04-05-at-9.07.56-PM.png" class="kg-image" alt loading="lazy" width="816" height="510" srcset=" __GHOST_URL__ /content/images/size/w600/2023/04/Screenshot-2023-04-05-at-9.07.56-PM.png 600w, __GHOST_URL__ /content/images/2023/04/Screenshot-2023-04-05-at-9.07.56-PM.png 816w" sizes="(min-width: 720px) 720px"><figcaption>https://www.usenix.org/conference/osdi18/presentation/gjengset</figcaption></figure>
+![https://www.usenix.org/conference/osdi18/presentation/gjengset](/assets/noria_sql.png)
 
 Noria will internally compile the materialized view into a DAG of partially-stateful and stateless operators.
 
-<figure class="kg-card kg-image-card kg-card-hascaption"><img src=" __GHOST_URL__ /content/images/2023/04/Screenshot-2023-04-05-at-9.13.29-PM.png" class="kg-image" alt loading="lazy" width="1392" height="1216" srcset=" __GHOST_URL__ /content/images/size/w600/2023/04/Screenshot-2023-04-05-at-9.13.29-PM.png 600w, __GHOST_URL__ /content/images/size/w1000/2023/04/Screenshot-2023-04-05-at-9.13.29-PM.png 1000w, __GHOST_URL__ /content/images/2023/04/Screenshot-2023-04-05-at-9.13.29-PM.png 1392w" sizes="(min-width: 720px) 720px"><figcaption>https://www.usenix.org/conference/osdi18/presentation/gjengset</figcaption></figure>
+![https://www.usenix.org/conference/osdi18/presentation/gjengset](/assets/noria_dataflow.png)
 
 Each stateful operator itself is a cache of its upstream data sources, which can be other operators or the base tables. Aggregation operators (e.g. `min`, `max`, `count`, etc.) are typically stateful to avoid recomputing the entire aggregation due to a single update. Filter, projection and join operators are stateless. All caches (the materialized views, as well as partially stateful operators) get updated on both read path (cache fill) and write path (update). Data can also be evicted to prevent unbounded state growth. And we want to keep the user facing materialized views eventually consistent.
 
 The classic cache race condition happens between a fill and a racing cache invalidation. E.g. a version 5 write invalidates cache, but a racing fill puts version 4 in cache, leading to permanent cache inconsistencies.
 
-<figure class="kg-card kg-image-card kg-card-hascaption"><img src=" __GHOST_URL__ /content/images/2023/04/Screenshot-2023-04-05-at-9.33.01-PM.png" class="kg-image" alt loading="lazy" width="1512" height="726" srcset=" __GHOST_URL__ /content/images/size/w600/2023/04/Screenshot-2023-04-05-at-9.33.01-PM.png 600w, __GHOST_URL__ /content/images/size/w1000/2023/04/Screenshot-2023-04-05-at-9.33.01-PM.png 1000w, __GHOST_URL__ /content/images/2023/04/Screenshot-2023-04-05-at-9.33.01-PM.png 1512w" sizes="(min-width: 720px) 720px"><figcaption>Classic cache fill and invalidation race https://engineering.fb.com/2022/06/08/core-data/cache-made-consistent/</figcaption></figure>
+![Classic cache fill and invalidation race https://engineering.fb.com/2022/06/08/core-data/cache-made-consistent/](/assets/cache_made_consistent.png)
 
 The same applies to Noria; it needs to order cache fills ("upquery" in the paper) and updates to avoid permanent cache inconsistencies in either the stateful operators or the materialized views.
 

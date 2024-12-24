@@ -31,7 +31,7 @@ In this way, we know exactly where the stand-alone object code would be emitted.
 
 Then I ran into this piece of code, in gcc's \<xmmintrin.h\>
 
-<figure class="kg-card kg-image-card"><img src=" __GHOST_URL__ /content/images/2023/05/346104271_193558470213454_6140940176565259059_n.png" class="kg-image" alt loading="lazy" width="1414" height="188" srcset=" __GHOST_URL__ /content/images/size/w600/2023/05/346104271_193558470213454_6140940176565259059_n.png 600w, __GHOST_URL__ /content/images/size/w1000/2023/05/346104271_193558470213454_6140940176565259059_n.png 1000w, __GHOST_URL__ /content/images/2023/05/346104271_193558470213454_6140940176565259059_n.png 1414w" sizes="(min-width: 720px) 720px"></figure>
+![xmmintrin](/assets/xmmintrin.jpg)
 
 What is `extern __inline`? How can this inline definition work without violating ODR in C99? So I tried `gcc -std=c99` with
 

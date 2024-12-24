@@ -8,7 +8,7 @@ tags:
 
 This was one of my favorite posters at Meta (formerly known as Facebook)'s office. I don't have a picture of it on my phone, so I found one from the internet.
 
-<figure class="kg-card kg-image-card"><img src=" __GHOST_URL__ /content/images/2022/07/lf-1.jpg" class="kg-image" alt loading="lazy" width="1635" height="2027" srcset=" __GHOST_URL__ /content/images/size/w600/2022/07/lf-1.jpg 600w, __GHOST_URL__ /content/images/size/w1000/2022/07/lf-1.jpg 1000w, __GHOST_URL__ /content/images/size/w1600/2022/07/lf-1.jpg 1600w, __GHOST_URL__ /content/images/2022/07/lf-1.jpg 1635w" sizes="(min-width: 720px) 720px"></figure>
+![facebook](/assets/facebook.jpg)
 
 I like to take ownership of problems that I run into, both at work, and in my personal life. When I see a problem, it bothers me until it's fixed, like a broken water heater. Two bytes in a database are corrupted? I want to know what happened and fix it. Caches are not consistent? I can't go to sleep until I fix it. Someone from another team has a design, which I think is sub-optimal? I need to "fix" it. Some system in an entirely different org is hitting a scaling limit? Let me help you devise a solution. My wife complains to me about her work and her day? There must be something I can do to fix it. My son tells me he doesn't like his counselor in the summer camp? I must do something about it.
 

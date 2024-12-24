@@ -27,11 +27,11 @@ Happens-before in this context is only referring to the _captured_ causality rel
 
 I call HLC-based snapshots **Internally Consistent Snapshots**.
 
-<figure class="kg-card kg-image-card"><img src=" __GHOST_URL__ /content/images/2023/01/1-26-23--5-54-PM-Microsoft-Lens.jpeg" class="kg-image" alt loading="lazy" width="2000" height="1535" srcset=" __GHOST_URL__ /content/images/size/w600/2023/01/1-26-23--5-54-PM-Microsoft-Lens.jpeg 600w, __GHOST_URL__ /content/images/size/w1000/2023/01/1-26-23--5-54-PM-Microsoft-Lens.jpeg 1000w, __GHOST_URL__ /content/images/size/w1600/2023/01/1-26-23--5-54-PM-Microsoft-Lens.jpeg 1600w, __GHOST_URL__ /content/images/size/w2400/2023/01/1-26-23--5-54-PM-Microsoft-Lens.jpeg 2400w" sizes="(min-width: 720px) 720px"></figure>
+![internal consistency](/assets/internal_consistent.jpeg)
 
 TrueTime/PTP on the other hand can order events without communication; and it can be externally consistent. I call PTP/TrueTime based snapshots **Externally Consistent Snapshots**.
 
-<figure class="kg-card kg-image-card"><img src=" __GHOST_URL__ /content/images/2023/01/1-26-23--6-01-PM-Microsoft-Lens.jpeg" class="kg-image" alt loading="lazy" width="2000" height="1440" srcset=" __GHOST_URL__ /content/images/size/w600/2023/01/1-26-23--6-01-PM-Microsoft-Lens.jpeg 600w, __GHOST_URL__ /content/images/size/w1000/2023/01/1-26-23--6-01-PM-Microsoft-Lens.jpeg 1000w, __GHOST_URL__ /content/images/size/w1600/2023/01/1-26-23--6-01-PM-Microsoft-Lens.jpeg 1600w, __GHOST_URL__ /content/images/size/w2400/2023/01/1-26-23--6-01-PM-Microsoft-Lens.jpeg 2400w" sizes="(min-width: 720px) 720px"></figure>
+![external consistency](/assets/external_consistent.jpeg)
 
 Notice that GPS and atomic clocks only need to be inside the system to provide External Consistency with PTP/TrueTime; while HLC's guarantee is strictly limited by the scope where causality can be captured. This is because all the components that require access to PTP/TrueTime can be internal. E.g. Only database servers perform the commit-wait; and we can put a client proxy server to mint a timestamp for linearizable reads even when the customers themselves do not have access to atomic clocks.
 
