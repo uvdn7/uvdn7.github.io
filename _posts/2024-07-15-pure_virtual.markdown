@@ -53,7 +53,7 @@ Turns out C++ mutates the vptr (vtable pointer) to make it point to the current 
 
 By setting a breakpoint in `~Base()`, we can see the vptr being mutated to point to the Base class from the Derived.
 
-<figure class="kg-card kg-image-card"><img src=" __GHOST_URL__ /content/images/2024/07/Screenshot-2024-07-15-at-4.01.32-PM.png" class="kg-image" alt loading="lazy" width="1718" height="356" srcset=" __GHOST_URL__ /content/images/size/w600/2024/07/Screenshot-2024-07-15-at-4.01.32-PM.png 600w, __GHOST_URL__ /content/images/size/w1000/2024/07/Screenshot-2024-07-15-at-4.01.32-PM.png 1000w, __GHOST_URL__ /content/images/size/w1600/2024/07/Screenshot-2024-07-15-at-4.01.32-PM.png 1600w, __GHOST_URL__ /content/images/2024/07/Screenshot-2024-07-15-at-4.01.32-PM.png 1718w" sizes="(min-width: 720px) 720px"></figure>
+![gdb_screenshot](/assets/pure_virtual_gdb_screenshot.png)
 
 This means if a Derived object is accessed (e.g. a virtual method being called upon), when it is _being_ destructed, specifically when it has executed its own destructor and it is _executing_ the Base class' destructor (polymorphism disabled), and when the Base class' method happens to be pure virtual, we will get "pure virtual method called".
 
