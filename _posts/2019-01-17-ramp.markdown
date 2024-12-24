@@ -1,0 +1,105 @@
+---
+layout: post
+title: Consistent Badge Count at Scale
+date: '2019-01-17 06:16:16'
+tags:
+- transaction
+- distributed-system
+---
+
+_-- Scalable Read Atomic Transaction for Partitioned Datastore_
+
+## A Story
+
+You are building a messaging app. You start with a non-partitioned single database, where you store _unseen message count_ and the actual _messages_ in two different tables. It served you well ... until more and more people are using your app and the data no longer fits in a single host. Then you tried to partition the data; put _unseen message count_ and _messages_ into two different databases. Works great, until you got bug reports from your upset users complaining that they are seeing a big red badge when there's no unseen messages.
+
+<figure class="kg-card kg-image-card"><img src=" __GHOST_URL__ /content/images/2019/01/Screen-Shot-2019-01-16-at-12.53.18-PM.png" class="kg-image" alt loading="lazy"></figure>
+## The problem
+
+When you partitioned the data, you have to now deal with Multi-Partition Transaction for certain use cases. The badge count here is just an example of that. (_For the sake of this post, let's assume the Badge Count here's pulled from the phone instead of pushed like iOS's app badge count. You can think of this badge as a badge inside your app._)
+
+<!--kg-card-begin: markdown-->
+
+There are other use cases that share the same underlying challenge. E.g. dis-aggregated secondary index, cross shard transaction on a sharded database. To abstract the problem, let's say you have `x=0` and `y=0` two variables and you update them to `x=1` and `y=1`. **While it's being updated and you perform a read** , you don't want to get `x==1 and y == 0` or `x==0 and y==1`. You want to get either `x==0 and y==0` or `x==1 and y==1`.
+
+<!--kg-card-end: markdown-->
+## Multi-Partition Transaction
+
+The most important guarantees we care about here are **Write Atomicity** (all or none updates would be performed) and **Read Atomicity** (all or none updates from a transaction would be visible).
+
+Atomic Write can be achieved by [Two Phase Commit](https://en.wikipedia.org/wiki/Two-phase_commit_protocol). But [two phase locking](https://en.wikipedia.org/wiki/Two-phase_locking) based Atomic Read would be too expensive for read heavy workload, as it requires two RTTs and no concurrent transactions be performed on overlapping keys. So for read heavy workload from Multi-partitioned datastore, how can we perform Atomic Reads at scale?
+
+## RAMP Transaction
+
+Pater Bailis introduced [RAMP transaction](http://www.bailis.org/blog/scalable-atomic-visibility-with-ramp-transactions/) to solve exactly this problem. I am going to explain the gist of the idea using the example above. The main idea being, with enough metadata about the transaction being stored at write time, client can detect fractured read and fix it up. And what's really cool is that it requires no coordination (unlike two phase commit) and it allows concurrent read/write transactions.
+
+<!--kg-card-begin: markdown-->
+
+**Write**
+
+[step-1] client pick a monotonically increasing and unique id ts<sub>t</sub>. You can imagine it being a tuple of client hostname and timestamp. And two `ts`s can be compared based on timestamps.
+
+[step-2] set x=1, ts=ts<sub>t</sub>. It would look something like the following. The write is not yet visible to client by default yet.
+
+_on host<sub>0</sub>_
+
+| Key | Value | TS | other\_participants |
+| --- | --- | --- | --- |
+| x | 1 | ts<sub>t</sub> | y |
+
+[step-3] set y=1, ts=ts<sub>t</sub>.
+
+_on host<sub>1</sub>_
+
+| Key | Value | TS | other\_participants |
+| --- | --- | --- | --- |
+| y | 1 | ts<sub>t</sub> | x |
+
+Assume it used to be
+
+| Key | Value | TS|other\_participants|  
+|-----|-------|---------|--|---|  
+| y | 0 | ts<sub>p</sub> | z|
+
+[step-4] set x=1 to be visible on host<sub>0</sub> by setting the `last_committed_ts` to be ts<sub>t</sub>.
+
+| Key | last\_committed\_ts |
+| --- | --- |
+| x | ts<sub>t</sub> |
+
+[step-5] set y=1 to be visible on host<sub>1</sub>
+
+Notice that this assumes ts<sub>t</sub> `>` ts<sub>p</sub>. If it's the other way around, `last_committed_ts` would stay to be ts<sub>p</sub>.
+
+| Key | last\_committed\_ts |
+| --- | --- |
+| y | ts<sub>t</sub> |
+
+* * *
+
+**Read**  
+Let's say a read is literally performed when the write transaction is in progress. And client got something like this:  
+_(key: x, value:1, ts:ts<sub>t</sub>, participants: y)_ and _(key:y, value:0, ts:ts<sub>p</sub>, participants: z)_, when the write transaction is in between **step-4** and **step-5**.
+
+**Step-5 above assumes ts<sub>p</sub> `<` ts<sub>t</sub>.** And in this case, client noticed that `y` claims to be in the same transaction as `x` at ts<sub>t</sub>. Since ts<sub>p</sub> `<` ts<sub>t</sub>, client would know that it's missing _(key: y, ts:ts<sub>t</sub>)_, and can fetch that specific version from host<sub>1</sub> _before it's fully committed_. This means write can literall "fail" at step-5 and it will be fine. Also notice that if write operation were aborted at step-4, no one would ever read and data at ts<sub>t</sub>. Hence it's invisible to clients. See? No coordination needed! No rollback. **This** is effectively the main idea behind RAMP transaction.
+
+<!--kg-card-end: markdown-->
+## Wrinkle in the original RAMP
+<!--kg-card-begin: markdown-->
+
+> ts<sub>p</sub> `<` ts<sub>t</sub>.
+
+Well does that always hold, even if ts<sub>t</sub>(`set y=1`) happened after ts<sub>p</sub>`set y=0`?
+
+<!--kg-card-end: markdown-->
+
+The answer is **NO**. Since the timestamp in RAMP is client timestamp, which is subject to various kind of clock-skew or even bogus local timestamp. The original RAMP paper has a policy that highest-timestamped write wins, instead of latest write wins. So it means even if the second write happens later, as long as its timestamp is smaller, it will effectively lose to the first write. The data in some sense is "lost". This is not an inherit limitation of performing RAMP transaction though, you can easily iron out the wrinkle by performing read-modify-write on each key to ensure `ts` is monotonically increasing. [Naive HLC](http://muratbuffalo.blogspot.com/2014/07/hybrid-logical-clocks.html) would work pretty well here. But it's not free as it will impact throughput as well as latency.
+
+## Reduce Write Amplification
+
+The Write Amplification of RAMP is not negligible, as it needs to store transaction participants as well as multiple versions of each key.
+
+> Can we cache recent writes for each key instead?
+
+I think so_._ Usually besides RAMP transaction, you would also need traditional two phase commit for supporting read-modify-write transaction. If you already have capability of doing locking on a key, and doing Atomic Read by locking all the keys, you can store multiple versions of recent writes **only in cache** and fall back to two phase locking reads if writes of specific `ts` is not in cache or not yet committed. You reduce write amplification at the cost of potentially more contention. Depending on the workload, this may or may not be a good trade-off.
+

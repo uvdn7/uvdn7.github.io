@@ -1,0 +1,49 @@
+---
+layout: post
+title: Notes on Amazon's DynamoDB USENIX ATC'22 Paper
+date: '2022-08-14 00:47:26'
+tags:
+- database
+- serverless
+---
+
+This is a very practical paper. It focuses on practical matters such as admission control, non-uniform access patterns, metastability introduced by caches, etc. You won't find fancy distributed system algorithms in this paper. But it's an important paper which covers critical topics nonetheless. A system only delivers real value to the customers when the rubber actually hits the road. I think people (or companies) who operate large multi-tenant services would appreciate this paper the most.
+
+## **What is DynamoDB**
+
+It's a fully managed cloud-native key/value database, which supports simple put and get APIs. At its very core, DynamoDB is a basic multi-tenant distributed k/v store. You have all the basic features you would expect – secondary indexes, ACID transactions. Tables are key-range shared into multiple partitions. Multiple replicas of each partition form a paxos group to be fault tolerant. Replicas are placed across different Availability Zones for durability (reducing the likelihood of losing quorum, or worse – losing all replicas).
+
+## **Consistent low latency**
+
+What stands out is that DynamoDB emphasizes on predictable/consistent low latency regardless of the scale of data or workload. This design goal might be under-appreciated by many people; but it's a very important characteristic, if you care about the reliability of your customer's applications. It's very hard for a client to deal with unpredictable performance. Saying a database is very fast most of the time (say p90 latency \< 100ms), doesn't help that much for a client to build a reliable application on top. E.g. I have a web application that each web request fans out 100 requests to DynamoDB. I will expect to observe DynamoDB's p99 latency. If DynamoDB's p99 latency varies a lot, my application's endpoint latency will vary as well. That would affect the capacity I need to provision (as each web server would need to hold connections longer, can serve fewer users concurrently, etc.).
+
+By calling out predictable/consistent low latency really speaks to AWS' expertise in the space.
+
+## **Challenges**
+
+There are a lot of practical challenges in operating a multi-tenant large scale distributed system. The rest of the paper goes through a few major challenges and how DynamoDB addresses them.
+
+#### **Admission Control**
+
+Admission Control is a must-have when operating a multi-tenant service. DynamoDB started with a solution with a static quota per partition. It's very easy to manage but it led to two major problems – hot partitions and throughput dilution. These two problems are two sides of the same coin, which can happen when accesses to different partitions of the same table are not even. Say I am allowed to send 1000 qps (query per second) to my table, which is split into 10 partitions. This effectively means I can only send at most 100 qps for a given key, or it will get throttled and I will observe errors.
+
+DynamoDB built a stateful service called Global Admission Control that tracks access globally, and proactively split partitions, or move partitions to different storage nodes before the workload gets throttled.
+
+I found the design of GAC very interesting. Clients (request routers) manage token buckets locally and replenish tokens from GAC infrequently. GAC itself consists of a set of stateful machines (presumably consistent hashed). The state stored in GAC servers are ephemeral and stored in memory, and losing data in GAC (from restart, etc.) is harmless.
+
+#### **Balancing workload**
+
+Unlike admission control which is user facing, the purpose of workload balancing is to increase utilization of the physical infrastructure. DynamoDB runs on a mixed hardware type, with different compute and storage capacities. Workload balance decision is made entirely in a distributed fashion – each storage node independently monitors the utilization and proposes certain workloads/replicas be moved off the storage node. No coordination needed on decision making – great. Similarly, partition split decisions are also made locally.
+
+#### **Hardware failures**
+
+We are talking about a database after all. Data correctness is paramount. DynamoDB runs checksum on every message exchanged. This is not a negligible compute cost.
+
+#### **Metastability from cache**
+
+There is a critical component in DynamoDB that keeps the mapping from keys to storage nodes. The map is super cacheable, with a hit rate of 99.75%. Nathan, et al. introduced a term called[Metastable Failures in their HOTOS'21 paper](https://sigops.org/s/conferences/hotos/2021/papers/hotos21-s11-bronson.pdf). A system with a cache is inherently metastable unless you have the backing store provisioned to take all traffic when the cache is down.
+
+Cache is amazing at saving capacity and reducing latency. When deployed at a large scale, the benefit can be large enough that people would just deal with the metastability and try to keep the cache operational all the time.
+
+DynamoDB took a very different approach. They want to have the low latency provided by a cache, so they continue to cache the map locally and store the map on an in-memory distributed store. &nbsp;What's really interesting is that on cache hits, it would still asynchronously send a request to the backing store (called MemDS in this case). So it's always provisioned to tolerate cache losses and removes this metastable failure mode completely.
+

@@ -1,0 +1,23 @@
+---
+layout: post
+title: BW-Tree
+date: '2020-10-17 23:04:22'
+tags:
+- btree
+- database
+---
+
+Traditional B-Tree has a few noticeable downsides e.g. heavy disk IO (for in-place update), and low space utilization (as B-Tree leaves a lot of space on the table to avoid frequent splits and merges).
+
+[BW-Tree](https://www.microsoft.com/en-us/research/publication/the-bw-tree-a-b-tree-for-new-hardware/)([https://www.microsoft.com/en-us/research/publication/the-bw-tree-a-b-tree-for-new-hardware/](https://www.microsoft.com/en-us/research/publication/the-bw-tree-a-b-tree-for-new-hardware/)) is a B-Tree variant proposed by Microsoft in 2013.
+
+<figure class="kg-card kg-image-card"><img src=" __GHOST_URL__ /content/images/2020/10/Untitled-1.png" class="kg-image" alt loading="lazy"></figure>
+## Characteristics 
+
+- Base nodes (regular BTree nodes) are immutable
+- lock-free (depend on atomic instructions instead of locks/latches)
+
+BW-Tree has two kinds of nodes, base node and delta nodes. Base nodes are just like regular BTree nodes, except that they are immutable (except during rare compaction process). It buffers all mutations in Delta Chains.
+
+It improves space utilization because we don't need to allocate extra space as the base nodes are immutable. It introduces an extra level of indirection, an in-memory mapping table, which translates node id to physical address. Thanks to this extra level of indirection, appending delta nodes can be done atomically with atomic instructions (CAS). Delta Chain comes at a cost of slower reads, as it has to chase the pointers to get the complete latest state for a given key.
+

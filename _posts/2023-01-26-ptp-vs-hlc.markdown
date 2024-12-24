@@ -1,0 +1,41 @@
+---
+layout: post
+title: PTP/TrueTime vs. HLC when it comes to snapshots
+date: '2023-01-26 23:14:24'
+tags:
+- clock
+- distributed-system
+- snapshot
+---
+
+Google's [Spanner](https://dl.acm.org/doi/10.1145/2491245) paper was published in 2012 which famously introduced the TrueTime API. [PTP](https://en.wikipedia.org/wiki/Precision_Time_Protocol) is the standard equivalent of TrueTime. Two years later, Kulkarni, et al. published the Hybrid Logical Clock paper – [Logical Physical Clocks and Consistent Snapshots in Globally Distributed Databases](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwj_mMyWpub8AhVUVTUKHSbkBQ8QFnoECBAQAQ&url=https%3A%2F%2Fcse.buffalo.edu%2Ftech-reports%2F2014-04.pdf&usg=AOvVaw1gaoeV_PmD_QczqKVg0x8R). In the HLC paper, they list the downsides of TrueTime,
+
+1. TrueTime requires special hardware,
+2. Commit-wait introduces delay and reduces concurrency. 
+
+(For readers less familiar with Spanner, here's a [summary]( __GHOST_URL__ /notes-on-the-spanner/) I wrote years ago.)
+
+The HLC paper claims that it can also provide consistent snapshots in distributed databases by capturing causality in every network communication and within each progress. It offers a set of theorems and corollaries to support it. It's pretty straightforward when explained in English. If event `e` happens-before event `f`, HLC(e) must be less than HLC(f). If HLC(e) == HLC(f), `e` and `f` must be concurrent events. In this case, if one takes a snapshot at `t` across multiple databases, you will get a consistent snapshot back, in a sense that no one would be able to detect any anomalies. Or is it so?
+
+## Externally vs. Internally consistent snapshots
+
+There is nothing wrong or inaccurate about the HLC paper, except that there is a very important definition about "happens-before" in the Introduction section.
+
+> The causality relationship captured, called happened-before (hb), is defined based on passing of information, rather than passing of time.
+
+Happens-before in this context is only referring to the _captured_ causality relationship. What if there is happens-before relationship that's not captured? It's entirely out of the HLC scope; and users can observe anomalies when the system misses out-of-band communication and the causality it implies.
+
+I call HLC-based snapshots **Internally Consistent Snapshots**.
+
+<figure class="kg-card kg-image-card"><img src=" __GHOST_URL__ /content/images/2023/01/1-26-23--5-54-PM-Microsoft-Lens.jpeg" class="kg-image" alt loading="lazy" width="2000" height="1535" srcset=" __GHOST_URL__ /content/images/size/w600/2023/01/1-26-23--5-54-PM-Microsoft-Lens.jpeg 600w, __GHOST_URL__ /content/images/size/w1000/2023/01/1-26-23--5-54-PM-Microsoft-Lens.jpeg 1000w, __GHOST_URL__ /content/images/size/w1600/2023/01/1-26-23--5-54-PM-Microsoft-Lens.jpeg 1600w, __GHOST_URL__ /content/images/size/w2400/2023/01/1-26-23--5-54-PM-Microsoft-Lens.jpeg 2400w" sizes="(min-width: 720px) 720px"></figure>
+
+TrueTime/PTP on the other hand can order events without communication; and it can be externally consistent. I call PTP/TrueTime based snapshots **Externally Consistent Snapshots**.
+
+<figure class="kg-card kg-image-card"><img src=" __GHOST_URL__ /content/images/2023/01/1-26-23--6-01-PM-Microsoft-Lens.jpeg" class="kg-image" alt loading="lazy" width="2000" height="1440" srcset=" __GHOST_URL__ /content/images/size/w600/2023/01/1-26-23--6-01-PM-Microsoft-Lens.jpeg 600w, __GHOST_URL__ /content/images/size/w1000/2023/01/1-26-23--6-01-PM-Microsoft-Lens.jpeg 1000w, __GHOST_URL__ /content/images/size/w1600/2023/01/1-26-23--6-01-PM-Microsoft-Lens.jpeg 1600w, __GHOST_URL__ /content/images/size/w2400/2023/01/1-26-23--6-01-PM-Microsoft-Lens.jpeg 2400w" sizes="(min-width: 720px) 720px"></figure>
+
+Notice that GPS and atomic clocks only need to be inside the system to provide External Consistency with PTP/TrueTime; while HLC's guarantee is strictly limited by the scope where causality can be captured. This is because all the components that require access to PTP/TrueTime can be internal. E.g. Only database servers perform the commit-wait; and we can put a client proxy server to mint a timestamp for linearizable reads even when the customers themselves do not have access to atomic clocks.
+
+## Use-cases of Internally Consistent Snapshots
+
+Semantically speaking External Consistency is obviously better than Internal Consistency; but it has a cost. Internal consistency is still very useful in practice. Say you have 100 databases, these 100 HLCs define a total order. Internally, we pretend this total order is consistent with physical time. HLC-based snapshots will be consistent within this total order, and that is very powerful. You can build systems internally that leverage this total order and snapshot capability. E.g. you can build a push-based SQL execution engine, in which it can perform `join` asynchronously against an internally consistent snapshot.
+

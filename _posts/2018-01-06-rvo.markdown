@@ -1,0 +1,99 @@
+---
+layout: post
+title: A Look into Return Value Optimization of C++
+date: '2018-01-06 06:19:07'
+tags:
+- cpp
+---
+
+I am learning C++ and ran into a "bizarre" issue, which was because Return Value Optimization (RVO) took place. In the spirit of learning C++, let's take a look into what's happening here.
+
+This is the code we will be looking at.
+
+    struct Foo {
+      Foo() {
+        cout << "foo constructed" << endl;
+      }
+      Foo(const Foo&) {
+        cout << "foo copied" << endl;
+      }
+      ~Foo() {
+        cout << "foo destructed" << endl;
+      }
+    };
+    
+    Foo f() {
+      Foo t;
+      return t;
+    }
+    
+    int main() {
+      Foo g = f();
+      return 0;
+    }
+
+`Foo` is very simple. It prints on construction, copy and destruction.
+
+### See it in action
+
+Now if you run it (compile with no special flags). You will get
+
+    foo constructed
+    foo destructed
+
+You can see that there was only one `Foo` instance ever constructed and never copied. If you turn copy elision off, by doing `g++ -fno-elide-constructors`, you will get
+
+    foo constructed
+    foo copied
+    foo destructed
+    foo copied
+    foo destructed
+    foo destructed
+
+### Dig into the assembly
+
+_How did the compiler get rid of the copies?_  
+In order to really see what's happening, we need to look at the assembly. You can get the complete assembly from [https://godbolt.org/](https://godbolt.org/).
+
+With RVO
+
+    f():
+      pushq %rbp
+      movq %rsp, %rbp
+      subq $16, %rsp
+      movq %rdi, -8(%rbp) // I guess it needs to store %rdi at %rbp-8 as `call` might change both %rax and %rdi
+      movq -8(%rbp), %rax
+      movq %rax, %rdi
+      call Foo::Foo() // construct the obj at %rdi
+      nop
+      movq -8(%rbp), %rax // return the original %rdi
+      leave
+      ret
+    main:
+      pushq %rbp
+      movq %rsp, %rbp
+      pushq %rbx
+      subq $24, %rsp
+      leaq -17(%rbp), %rax
+      movq %rax, %rdi // %rdi stores the address
+      call f()
+      movl $0, %ebx
+      leaq -17(%rbp), %rax
+      movq %rax, %rdi
+      call Foo::~Foo() // destruct the only obj created
+      movl %ebx, %eax
+      addq $24, %rsp
+      popq %rbx
+      popq %rbp
+      ret
+
+**The gist is that the callee construct an object in caller's stack frame, by reading `%rdi` for the address. In this way, no copy is needed.**
+
+The one without RVO is much longer and less interesting.
+
+`gdb` is very useful in understanding exactly what each assembly instruction is doing. Here are a few useful commands:
+
+- `disassemble` to show the assembly
+- `nexti` to execute one line
+- `x/xg` to exam the memory address, which can check registers as well
+<!--kg-card-end: markdown-->

@@ -1,0 +1,39 @@
+---
+layout: post
+title: C++ Map Lookup Memoization
+date: '2021-05-05 20:28:48'
+tags:
+- cpp
+- efficiency
+---
+
+Memoization is an old technique. It's basically caching outputs for giving inputs (usually in a map). But a map lookup itself is not free. How can we memoize map lookups?
+
+I learned from my coworker this nifty trick recently. Let's say we have a map (e.g. `std::unordered_map<K,V>`, for which the associations (key -\> value mapping) don't change during the lifetime of the program. This is fairly common for things like settings and counters. Now every time you look up a certain key, you have to paid the lookup cost (more instructions, cacheline misses, memory accesses, you name it). How can we make it faster?
+
+<!--kg-card-begin: markdown-->
+
+    // imagine a hot code path that gets executed for every request
+    
+    // instead of
+    auto res = map["key"];
+    
+    // how about
+    #define MAP_LOOKUP(key) \
+      [&]() { \
+          constexpr const char* const const_key = (key);
+          static auto res = map[const_key]; \
+          return res; \
+      }()
+      
+    auto res = MAP_LOOKUP("key");
+    
+
+<!--kg-card-end: markdown-->
+
+Now instead of doing the map lookup every time, we only perform the lookup once per `MAP_LOOK(key)` _callsite_ (not per key). Notice we used `static` local variable in a lambda. Since a unique class type is created for each `MAP_LOOKUP(key)` _callsite_, we get memoization for each callsite (not per key).
+
+Because we are memoizing per callsite (not per key), the key _cannot_ change at a given callsite. The way to make sure that's the case is by enforcing the `key` to be a `constexpr`.
+
+The lambda is not free for sure. But it's just an allocation on the stack. So very cheap.
+

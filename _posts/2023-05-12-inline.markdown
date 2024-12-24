@@ -1,0 +1,63 @@
+---
+layout: post
+title: What I learned about `inline` recently
+date: '2023-05-12 18:43:03'
+tags:
+- cpp
+---
+
+C++'s `inline` is pretty nice, in my opinion. I define an `inline` function with external linkage, things work as expected ([https://en.cppreference.com/w/cpp/language/inline](https://en.cppreference.com/w/cpp/language/inline)):
+
+- taking the address of the `inline` function works
+- function-local `static` objects work as expected (shared across all translation units) 
+- no ODR issue
+
+The linker most likely emits one (and only one) copy of the function object; but we don't know where in lives. Someone calls this "[vague linkage](https://stackoverflow.com/questions/23272985/whats-is-the-idea-behind-c99-inline)".
+
+There's no "vague linkage" in C99. The way it works is by having the following in the header file (as we need the definition in each TU),
+
+    inline int max(int a, int b) {
+      return a > b ? a : b;
+    }
+
+...and in exactly one source file:
+
+    #include "header.h"
+    extern int max(int a, int b);
+
+([https://www.greenend.org.uk/rjk/tech/inline.html](https://www.greenend.org.uk/rjk/tech/inline.html))
+
+In this way, we know exactly where the stand-alone object code would be emitted. Good.
+
+Then I ran into this piece of code, in gcc's \<xmmintrin.h\>
+
+<figure class="kg-card kg-image-card"><img src=" __GHOST_URL__ /content/images/2023/05/346104271_193558470213454_6140940176565259059_n.png" class="kg-image" alt loading="lazy" width="1414" height="188" srcset=" __GHOST_URL__ /content/images/size/w600/2023/05/346104271_193558470213454_6140940176565259059_n.png 600w, __GHOST_URL__ /content/images/size/w1000/2023/05/346104271_193558470213454_6140940176565259059_n.png 1000w, __GHOST_URL__ /content/images/2023/05/346104271_193558470213454_6140940176565259059_n.png 1414w" sizes="(min-width: 720px) 720px"></figure>
+
+What is `extern __inline`? How can this inline definition work without violating ODR in C99? So I tried `gcc -std=c99` with
+
+    // test.h
+    extern inline int foo() {}
+    
+    // foo.c
+    #include "test.h"
+    
+    // bar.c
+    #include "test.h"
+    
+
+I absolutely got ODR
+
+    multiple definition of `foo'
+
+But the following worked just fine with gcc
+
+    // foo.c
+    #include <xmmintrin.h>
+    
+    // bar.c
+    #include <xmmintrin.h>
+
+I [asked around](https://twitter.com/uvdn7/status/1657090544579796992) and what I learned is that ` __gnu_inline__ ` attribute changes the inline behavior ([https://gcc.gnu.org/onlinedocs/gcc-6.1.0/gcc/Common-Function-Attributes.html](https://gcc.gnu.org/onlinedocs/gcc-6.1.0/gcc/Common-Function-Attributes.html)).
+
+> If the function is declared `extern`, then this definition of the function is used only for inlining. &nbsp;In no case is the function compiled as a standalone function, not even if you take its address explicitly. &nbsp;Such an address becomes an external reference, as if you had only declared the function, and had not defined it. &nbsp;This has almost the effect of a macro. &nbsp;The way to use this is to put a function definition in a header file with this attribute, and put another copy of the function, without `extern`, in a library file. &nbsp;The definition in the header file causes most calls to the function to be inlined. &nbsp;If any uses of the function remain, they refer to the single copy in the library. &nbsp;Note that the two definitions of the functions need not be precisely the same, although if they do not have the same effect your program may behave oddly.
+

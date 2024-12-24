@@ -1,0 +1,49 @@
+---
+layout: post
+title: Application Binary Interface from the Ground Up
+date: '2021-11-19 05:13:56'
+tags:
+- abi
+- operating-system
+---
+
+[ABI](https://en.wikipedia.org/wiki/Application_binary_interface) stands for Application Binary Interface. It includes a set of rules e.g. calling conventions. For a long time, I found the concept of ABI hard to grasp. I want to take a step back and see if we start from the ground up, where and why we would need something like an ABI.
+
+## **Only the essential**
+
+Let's start from the _very_ basics. Stripping away all the unessential abstractions, how does a program work? I write some machine code (instructions) and the code runs on some hardware (ALU, Program Counter, registers, memory, instruction register, instruction decoder, clock). Done. No compiler, no operating system, _no stack_ even. A real world example is an[8-bit computer on a breadboard]( __GHOST_URL__ /8-bit-breadboard-computer/) I built following Ben Eater's videos. It just runs pre-installed instructions. It's very straightforward. No ABI whatsoever. The following thought experiment is built on top of this 8 bit breadboard computer.
+
+## **Add stack and function**
+
+Now I want to make the computer run larger programs, with many more instructions. I need to have a compiler that turns a higher level language into machine code. What are the essential features we need from this language? Modularity is the key to organizing a complex program. Modules with clear interfaces enable separation of concerns. So forget about fancy unessential features such as memory management, object-oriented programming, etc. The single most important feature we need in our high level language is _function_. Notice that in our crudest form of program, we don't even have a stack. With function, we would want to have some local state (local variables), so we really need a stack to store those local variables. I think having local variable is _the_ most important motivator for having a stack (which covers argument passing). Although x86 `call/ret`instructions also use the stack for return address, it technically can be done with an additional register as well (which would be a really inefficient use of a register).
+
+Let's say we have functions A and B. They will just be compiled to two sections of machine code labeled with "A" and "B". Hardware doesn't understand functions. It only talks machine code. For function A to call function B, we need to essentially `jmp` to section B (by setting the Program Counter). By the way, our hardware must support `jmp` instruction as that's the key instruction to make it Turing Complete. We can pass arguments from A to B (and return value from B to A) by using the stack also, in _any way_ we want. &nbsp;No ABI whatsoever.
+
+## **Add operating system**
+
+Now I want to run multiple programs on the computer, which has only one CPU. The only way to achieve it is by having a scheduler that coordinates multiple running programs. Another name for this scheduler is Operating System. Forget about security, safety, and file abstraction, hardware abstraction, etc. The single most important feature of an operating system is to manage multiple running processes on shared hardware. In its most basic form, the kernel process will be the only process running initially. When requested, it can start another program (transfer control to the program). The kernel must be able to interrupt a running process, to perform the job of multi-tasking and scheduling. When a program finishes running, it needs to hand back the control back to the kernel. This is the first time that multiple programs need to interact with each other.
+
+If code for this kernel, interruption handler, program #1, program #2 all just live in memory in their crudest form, they can work just fine on my computer. We don't need to actually add additional abstractions for it to work. No ABI whatsoever.
+
+## **Add files**
+
+However, code is complicated, we like to only write it once, and share it with other people. We want the same kernel and our applications to work on multiple computers. So far the code only lives in memory where everything is hard coded. We could just load up a disk and mail it to our friend. But that also means without code change, a computer – with exactly the same data loaded – can only perform exactly the same function as mine. That's not ideal. We want our friends to have the ability to run other programs as well. The only way to do it is by breaking up the monolithic data into smaller pieces – let's call them files. I can send my friend separate files. One for the kernel, one for program #1. He can even have program #3 from another friend.
+
+The moment when we broke data into smaller pieces, we lost the ability for them to interact with each other, at least based on the crudest method we used before, which is based on hard coded memory offsets. This is not too bad. The kernel can load all the instructions from a file into memory and remember the offset somewhere. So instead of the kernel jumping to the offset directly, it now needs to lookup the offset first – adding one level of indirection solves most if not all problems in computer science. No ABI whatsoever.
+
+## **Add syscalls**
+
+So far our programs are pretty limited. All the inputs are pre-installed (hard coded in the program). The output only goes to a few 7-segment displays. We want the computer to capture inputs from e.g. a keyboard and be able to perform e.g. basic calculator functions via a program. We want the keyboard to be general-purposed instead of one set of physical buttons for one program.
+
+So far our application programs have been interacting with the hardware pretty much directly over instructions. It can technically do the same for keyboard. E.g. each keypress event can go to a predefined register, reading keyboard can be implemented by a set of instructions that read from this register. Similarly writing to output can be achieved by a set of instructions that write value to an output register. This works if there's only one process that's doing IO. If there are multiple processes doing IO at the same time, one can easily mess up the registers. So we need someone to make sure it doesn't happen. Naturally the kernel picks up this responsibility for managing the keyboard and their events. It means application programs can only interact with certain hardware (e.g. keyboard, monitor, etc. but not CPU, RAM, etc.) through the kernel. Now the kernel controls all accesses to the keyboard, it can make sure keypress events go to the right application process. &nbsp;How exactly would a program interact with a kernel? Via function of course. The good news is that we already have functions defined earlier. We can just define a set of kernel functions that applications can invoke. Another name for this type of functions is System Call. No ABI whatsoever.
+
+## **Add releases**
+
+So far, we can distribute kernel and applications; applications can interact with hardware such as a keyboard via syscalls. We want to add new features, fix bugs, and release new versions of kernel and applications independently. We want to release a new version of the kernel, and all applications that work on the old kernel can continue to work on the new one. Here we have a problem. Our applications can issue system calls (implemented as a function call, specifically in our thought experiment, but the overall abstraction still applies) to the kernel, and arguments are passed via stack. What if the new kernel version decides to load the syscall arguments in a different order than a caller function stores them? E.g. function A pushes arguments x, y onto the stack, and then `jmp` to a kernel system call. The kernel function takes two arguments x and y. But the new kernel version (shipped in the form of machine code) loads `ebp - 4` as `x` and `ebp - 8` as `y` (which used to be the other way around). Obviously things won't work. We need a contract between programs (kernel being a program as well), so we can release different programs independently and they can still work together. _Another name for this contract is ABI._
+
+## **ABI**
+
+So ABI matters only when multiple binaries (programs) interact with each other. It happens all the time between kernel and application, dynamically linked libraries (e.g. glibc), or when linking object files compiled by different compilers (e.g. python, C, rust), etc.
+
+ABI doesn't have to be tied to a language. But it's always dependent on the architecture (because e.g. the calling convention depends on at least how many registers you have). AMD64 ABI is the most commonly used ABI for x86-64 architecture. ABI can also be language specific. E.g.[Itanium C++ ABI](https://itanium-cxx-abi.github.io/cxx-abi/) describes certain rules so that separately compiled binaries _for C++ specifically_ can work together, which includes C++ specific rules e.g. name mangling.
+

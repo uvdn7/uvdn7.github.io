@@ -1,0 +1,56 @@
+---
+layout: post
+title: SeqLock
+date: '2021-05-08 00:58:32'
+tags:
+- lock
+- cpp
+---
+
+Sequential lock is a common technique used to protect data that's frequently read and rarely updated. Writers are required to take exclusive lock to mutate the data. Reads are effectively lock free and optimistic. The data protected by a SeqLock usually needs to be `trivially_copy_constructible`.
+
+<!--kg-card-begin: markdown-->
+
+    // reader
+    
+    std::atomoc<uint8_t> atom_{0}; // odd means write in progress, even otherwise
+    int data_;
+    
+    void write(int data) {
+        while(true) {
+            uint8_t cur = atom_.load(std::memory_order::relaxed);
+            if (cur % 2 == 0) {
+                // no other writer is trying to perform a write
+                bool locked = atom_.compare_and_exchange(
+                    cur /* expected */,
+                    cur + 1 /* set it to an odd number */,
+                    std::memory_order::relaxed /* mem order on success */,
+                    std::memory_order::acquire /* mem order on failure */);
+                if (locked) {
+                    data_ = data; // no data race due to mutual exclusion provided by the spin lock
+                    atom_.store(cur + 2, std::memory_order::release);
+                }
+            }
+        }
+    }
+    
+    int read() {
+        int data;
+        while(true) {
+            uint8_t begin = atom_.load(std::memory_order::relaxed);
+            data = data_; // unprotected access; data race; make copy;
+            uint8_t end = atom_.load(std::memory_order::acquire);
+            if (begin == end && begin % 2 == 0) {
+                // if atom is even (no writer is writing) and didn't 
+                // change in the course of the read, it's safe to return data
+                return data;
+            }
+        }
+    }
+
+<!--kg-card-end: markdown-->
+
+Notice that we used a single `std::atomic` to achieve both spin-lock for mutual exclusion for writers and sequential lock for the readers.
+
+There can be data races when reading i.e. the `data_ = data;` but as long as we don't return the data if a racing write is detected, the race is benign. Unless `data` if of non trivial type T that is not trivially copy constructible. Then `T`'s copy constructor might lead to segfault. So usually adding `static_assert(std::is_trivially_copy_constructible_v<T>, "data must be trivially copy constructible");`is a good idea.
+
