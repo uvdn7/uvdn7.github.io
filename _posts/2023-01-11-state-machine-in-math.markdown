@@ -6,9 +6,9 @@ tags:
 - tla
 ---
 
-Previous post can be found here – [https://blog.the-pans.com/state-machine/]( __GHOST_URL__ /state-machine/). The entire series is based on Lamport's [TLA+ tutorial](https://lamport.azurewebsites.net/video/videos.html).
+Previous post can be found here – [https://blog.the-pans.com/state-machine/](/state-machine/). The entire series is based on Lamport's [TLA+ tutorial](https://lamport.azurewebsites.net/video/videos.html).
 
-In the previous [post]( __GHOST_URL__ /state-machine/), we talked about any system can be described as a state machine. What language should we use to describe state machines? TLA+ uses mathematics, which is precise and forces the users to reason about systems abstractly. &nbsp;
+In the previous [post](/state-machine/), we talked about any system can be described as a state machine. What language should we use to describe state machines? TLA+ uses mathematics, which is precise and forces the users to reason about systems abstractly. &nbsp;
 
 ## Describing state machines using math
 

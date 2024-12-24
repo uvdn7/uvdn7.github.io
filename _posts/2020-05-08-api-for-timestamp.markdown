@@ -8,7 +8,7 @@ tags:
 - distributed-system
 ---
 
-This is a follow-up post of my [previous one]( __GHOST_URL__ /notes-on-the-spanner/) about Spanner. There I talked about how Spanner uses TrueTime API to achieve external consistency at global scale and hide sharding and replication from users.
+This is a follow-up post of my [previous one](/notes-on-the-spanner/) about Spanner. There I talked about how Spanner uses TrueTime API to achieve external consistency at global scale and hide sharding and replication from users.
 
 In this post, I want to discuss different options of assigning timestamps and their usefulness to applications. But first, let's take a look at how can you get a timestamp with bounded uncertainty. You can't reply on software if you want to have an accurate clock. As long as the clock synchronization happens in software, you can't have an accurate bound of the uncertainty. Even if the daemon runs in kernel space, there can be times that memory pressure is high, and the code can be waiting for IO, etc. It's impossible to have a bound on the execution time of the daemon. Notice that we are talking about milliseconds, if not microseconds or nanoseconds. Having a bound of one minute e.g. is not very helpful. That's why [Precision Time Protocol](https://en.wikipedia.org/wiki/Precision_Time_Protocol) (or PTP) requires hardware support, i.e. timestamps are minted by network cards. And PTP clock synchronization is done usually, if not exclusively, in hardware. Once you bypass software, time synchronization, especially various latency estimations are much easier. Hence tighter bound on clock uncertainty.
 

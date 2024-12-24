@@ -29,7 +29,7 @@ What is this `__cxa_allocate_exception` and what does it do? To understand it, w
 
 ## Itanium C++ ABI
 
-The [Itanium C++ ABI](https://itanium-cxx-abi.github.io/cxx-abi/) is a language specific (obviously) [ABI]( __GHOST_URL__ /abi/).
+The [Itanium C++ ABI](https://itanium-cxx-abi.github.io/cxx-abi/) is a language specific (obviously) [ABI](/abi/).
 
 > The Itanium C++ ABI is an ABI for C++. &nbsp;As an ABI, it gives precise rules for implementing the language, ensuring that separately-compiled parts of a program can successfully interoperate.
 
@@ -127,7 +127,7 @@ It's also interesting that `libunwind` itself actually doesn't terminate the pro
 
 #### `__cxa_*` C++ APIs
 
-`libc++abi` is LLVM's implementation (`libsupc++` within `libstdc++` from GCC serves similar functionality) of the C++ ABI as part of the Itanium ABI. The C++ ABI covers a range of things e.g. the layout of exception objects, control transfer, etc. But we will just focus on the APIs. C++ ABI functions all start with `__cxa_` prefix. If you remember from our [assembly dump](__GHOST_URL__/cpp-exception-1/) from the first post, we have seen a few of them already — `__cxa_allocate_exception`, ` __cxa_throw`, `__ cxa_begin_catch` and ` __cxa_end_catch`. C++ ABI is built on top of the base unwind APIs. E.g. `__ cxa_throw` calls `_Unwind_RaiseException`.
+`libc++abi` is LLVM's implementation (`libsupc++` within `libstdc++` from GCC serves similar functionality) of the C++ ABI as part of the Itanium ABI. The C++ ABI covers a range of things e.g. the layout of exception objects, control transfer, etc. But we will just focus on the APIs. C++ ABI functions all start with `__cxa_` prefix. If you remember from our [assembly dump](/cpp-exception-1/) from the first post, we have seen a few of them already — `__cxa_allocate_exception`, ` __cxa_throw`, `__ cxa_begin_catch` and ` __cxa_end_catch`. C++ ABI is built on top of the base unwind APIs. E.g. `__ cxa_throw` calls `_Unwind_RaiseException`.
 
 It's interesting that `libc++abi` has APIs such as `__cxa_new_handler`, that is not present in `libstdc++`. I found an[email from Apple](https://itanium-cxx-abi.github.io/cxx-abi/cxx-abi-dev/archives/2010-May/002322.html) explaining why it's added. First of all, `libc++abi` is introduced so that libraries built with `libc++` and `libstdc++` can interoperate. But there's a problem when it comes to `std::set_new_handler` (and a few others), where it assumes there exists a global handle. Now if a library compiled with `libstdc++` calls `std::set_new_handler` to function A, another library compiled with `libc++` calls `std::set_new_handler` to function B, and these two libraries are linked together. There's no contract about how they can consolidate the conflict. One solution is to factor out the actual implementation of `std::set_new_handler` and link the implementation with the two libraries only once, which is essentially what Apple proposed and implemented in `libc++abi`.
 

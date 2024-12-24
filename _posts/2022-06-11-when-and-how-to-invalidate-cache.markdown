@@ -24,7 +24,7 @@ Say a system has following components (a very typical web application setup):
 - one cache server (say Memcache)
 - one database (say Postgres)
 
-In the database we store a table (a set of [relations]( __GHOST_URL__ /relational/)) called `friends`. And its schema looks something like:
+In the database we store a table (a set of [relations](/relational/)) called `friends`. And its schema looks something like:
 
 <!--kg-card-begin: markdown-->
 

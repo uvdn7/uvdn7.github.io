@@ -13,7 +13,6 @@ _-- Scalable Read Atomic Transaction for Partitioned Datastore_
 
 You are building a messaging app. You start with a non-partitioned single database, where you store _unseen message count_ and the actual _messages_ in two different tables. It served you well ... until more and more people are using your app and the data no longer fits in a single host. Then you tried to partition the data; put _unseen message count_ and _messages_ into two different databases. Works great, until you got bug reports from your upset users complaining that they are seeing a big red badge when there's no unseen messages.
 
-<figure class="kg-card kg-image-card"><img src=" __GHOST_URL__ /content/images/2019/01/Screen-Shot-2019-01-16-at-12.53.18-PM.png" class="kg-image" alt loading="lazy"></figure>
 ## The problem
 
 When you partitioned the data, you have to now deal with Multi-Partition Transaction for certain use cases. The badge count here is just an example of that. (_For the sake of this post, let's assume the Badge Count here's pulled from the phone instead of pushed like iOS's app badge count. You can think of this badge as a badge inside your app._)

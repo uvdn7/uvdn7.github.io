@@ -13,7 +13,7 @@ Google's [Spanner](https://dl.acm.org/doi/10.1145/2491245) paper was published i
 1. TrueTime requires special hardware,
 2. Commit-wait introduces delay and reduces concurrency. 
 
-(For readers less familiar with Spanner, here's a [summary]( __GHOST_URL__ /notes-on-the-spanner/) I wrote years ago.)
+(For readers less familiar with Spanner, here's a [summary](/notes-on-the-spanner/) I wrote years ago.)
 
 The HLC paper claims that it can also provide consistent snapshots in distributed databases by capturing causality in every network communication and within each progress. It offers a set of theorems and corollaries to support it. It's pretty straightforward when explained in English. If event `e` happens-before event `f`, HLC(e) must be less than HLC(f). If HLC(e) == HLC(f), `e` and `f` must be concurrent events. In this case, if one takes a snapshot at `t` across multiple databases, you will get a consistent snapshot back, in a sense that no one would be able to detect any anomalies. Or is it so?
 

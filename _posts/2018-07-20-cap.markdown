@@ -41,7 +41,7 @@ _经Martin Kleppman本人同意，这篇文章是他[英文原文](https://marti
 为了可以解释的更清楚一些，让我们来看一个例子。在这个例子中的系统并不是可线性化的。  
 看下面这个图(我还没有发行的书的[预览](http://dataintensive.net/))：
 
-![linearizability]( __GHOST_URL__ /content/images/2018/07/linearizability.png)
+![](/assets/cap.png)
 
 这张图展示了Alice还有Bob,他们在同一个房间，都在看他们的手机查[2014年世界杯的决赛结果](www.bbc.co.uk/sport/0/football/28181689)。就在最终结果刚发布之后，Alice刷新了页面，看到了宣布冠军，而且很兴奋地告诉了Bob。Bob马上也重新加载了他手机上的页面，但是他的请求被送到了一个数据库的拷贝，还没有拿到最新的数据，结果他的手机上显示决赛还正在进行。
 
@@ -61,7 +61,7 @@ _经Martin Kleppman本人同意，这篇文章是他[英文原文](https://marti
 
 那么现在假设网络中断了，这就是我们所说的网络分区的意思。接下来怎么样呢?
 
-![cap-availability]( __GHOST_URL__ /content/images/2018/07/cap-availability.png)
+![](/assets/cap2.png)
 
 显然你有两个选择：
 
@@ -130,7 +130,7 @@ _经Martin Kleppman本人同意，这篇文章是他[英文原文](https://marti
 
 - 一个很好的起点就是Doug Terry的论文。其中他[用棒球来解释了各种不一样的最终一致性](https://www.microsoft.com/en-us/research/publication/replicated-data-consistency-explained-through-baseball/?from=http%3A%2F%2Fresearch.microsoft.com%2Fpubs%2F157411%2Fconsistencyandbaseballreport.pdf)。可读性很强，而且就算对像我这样不是美国人而且完全不懂棒球也解释的很清晰。
 - 如果你对transaction的isolation模型有兴趣（这和分布式系统的一致性不一样，但是相关），我的小项目[Hermitage](http://martin.kleppmann.com/2014/11/25/hermitage-testing-the-i-in-acid.html)你可以看一下。
-- [这篇论文](arxiv.org/pdf/1302.0309.pdf)讨论了分布式系统的一致性和transaction的isolation以及可用性之间的关系。（这篇论文也描述了不同一致性之间的分级。Kyle Kingsbury[很喜欢给别人讲这个](https://aphyr.com/posts/322-call-me-maybe-mongodb-stale-reads)。） ![isolation-levels]( __GHOST_URL__ /content/images/2018/07/isolation-levels.png)
+- [这篇论文](arxiv.org/pdf/1302.0309.pdf)讨论了分布式系统的一致性和transaction的isolation以及可用性之间的关系。（这篇论文也描述了不同一致性之间的分级。Kyle Kingsbury[很喜欢给别人讲这个](https://aphyr.com/posts/322-call-me-maybe-mongodb-stale-reads)。） ![](/assets/cap3.png)
 - 当你读到过这些了以后，你应该已经准备好深入阅读论文。我在这篇文章中加入了很多对文献的引用。去看一下，很多专家已经帮你把很多问题都已经解决了。
 - 作为最后的手段，如果你不想读论文原文，我建议你看一下[我的书](http://dataintensive.net/)。这本书用通俗易懂的方式总结了大多数重要的思想。（你看，我已经竟可能的让这篇文章看上去不是用来推销我的书的。）
 - 如果你想学跟多关于怎么正确使用ZooKeeper，[Flavio Junqueira 还有 Benjamin Reed的书](http://shop.oreilly.com/product/0636920028901.do)是非常不错的。

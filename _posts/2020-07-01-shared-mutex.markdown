@@ -10,15 +10,15 @@ tags:
 
 The basic concept of a read-write lock is simple. It allows multiple readers to access the resource simultaneously, but at most one thread can have exclusive ownership of the lock (a.k.a write lock). It's supposed to be an optimization, comparing to simple mutex (e.g. `std::mutex`). As in theory, multiple readers do not contend. Naively, read performance should scale linearly. However, this is not the case in practice for most read-write locks, due to cacheline pingpong-ing.
 
-<!--kg-card-end: markdown--><figure class="kg-card kg-image-card kg-card-hascaption"><img src=" __GHOST_URL__ /content/images/2020/07/Screen-Shot-2020-07-01-at-2.21.45-PM.png" class="kg-image" alt loading="lazy"><figcaption>CPU cache</figcaption></figure><!--kg-card-begin: markdown-->
+![](/assets/shared-mutex1.png)
 
 Let's say N threads are running on N cores, all trying to get shared ownership of the mutex (read lock). Because we need to keep a count of the number of active readers (to exclude writers), each `lock_shared()` call needs to mutate the mutex state.
 
-<!--kg-card-end: markdown--><figure class="kg-card kg-image-card"><img src=" __GHOST_URL__ /content/images/2020/07/Screen-Shot-2020-07-01-at-2.27.11-PM.png" class="kg-image" alt loading="lazy"></figure>
+![](/assets/shared-mutex2.png)
 
 And CPU needs to keep cache coherent. It needs to invalidate cachelines in other cores of the same address.
 
-<figure class="kg-card kg-image-card"><img src=" __GHOST_URL__ /content/images/2020/07/Screen-Shot-2020-07-01-at-2.29.29-PM.png" class="kg-image" alt loading="lazy"></figure>
+![](/assets/shared-mutex3.png)
 
 Now if Core 1 wants to get the lock in shared mode, it will get a cache miss. An L1 cache hit takes about 4 CPU cycles. Main memory access usually takes 20x more CPU cycles if not more. In Jeff Dean's famous latency table, L1 cache hit takes about 0.5 ns, and main memory access is about 100 ns. In this way, the performance doesn't scale linearly as you throw more readers to the data. By increasing the number of threads, you often end up with 10x power assumption and maybe 20% performance improvment over single reader.
 
@@ -29,7 +29,7 @@ Now if Core 1 wants to get the lock in shared mode, it will get a cache miss. An
 
 Voilà! No more cacheline pingpong-ing!
 
-<!--kg-card-end: markdown--><figure class="kg-card kg-image-card"><img src=" __GHOST_URL__ /content/images/2020/07/Screen-Shot-2020-07-01-at-2.47.35-PM.png" class="kg-image" alt loading="lazy"></figure><!--kg-card-begin: markdown-->
+![](/assets/shared-mutex4.png)
 
 However, it does come with a downside. Because _all_ deferred readers share the same block of static memory, this means
 
@@ -91,4 +91,4 @@ If no slots are available, readers are inlined. They are refcounted inside the 3
 
 You can run the [benchmark](https://github.com/facebook/folly/blob/master/folly/test/SharedMutexTest.cpp) on your own hardware. On my machine (32KB L1 cache per core, dual-socket, 24 cores with hyperthreading enabled), `folly::SharedMutex` is better than other mutexes in most of the cases, and in some cases significantly faster. When it's slower than other mutexes, it's usually only few ns slower.
 
-<!--kg-card-end: markdown--><figure class="kg-card kg-image-card kg-card-hascaption"><img src=" __GHOST_URL__ /content/images/2020/07/Screen-Shot-2020-07-01-at-4.57.26-PM.png" class="kg-image" alt loading="lazy"><figcaption>benchmark</figcaption></figure>
+![](/assets/shared-mutex5.png)

@@ -12,7 +12,7 @@ These two are very different concepts but can be confusing. re-entrant is used t
 
 A function is re-entrant, if it can be interrupted in the middle of an execution, and it's safe to call the same function again in the same thread. The second execution of the function can finish after the first one. Notice how this differs from recursing a function, as in recursion, the latter execution always finishes before the former execution. Re-entering a function is a generalization of recursing a function.
 
-![Screen-Shot-2019-07-23-at-4.57.21-PM]( __GHOST_URL__ /content/images/2019/07/Screen-Shot-2019-07-23-at-4.57.21-PM.png)
+![](/assets/reenter.png)
 
 A function is thread-safe, if multiple threads can execute the same function at the same time safely.
 

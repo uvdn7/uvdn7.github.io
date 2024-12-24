@@ -18,7 +18,7 @@ The film talks about a little kid who thinks 2 + 2 = 22, the teacher says it's w
 
 Symbols like "1", "2", and "apple", are only meaningful because we assign them meanings. "2" can be a symbol in an [unary number system](https://en.wikipedia.org/wiki/Unary_numeral_system), in which case 2 + 2 = 22, is correct. In this case, 22, however it's being pronounced, means two. "Apple" can be used to describe the item in the picture below.
 
-![orange-painting]( __GHOST_URL__ /content/images/2020/05/orange-painting.jpg)
+![](/assets/math1.jpg)
 
 "Apple" only means apple because we all agree on this definition.
 
@@ -30,7 +30,7 @@ At the end of the film, the teacher says $2,000 + $2,000 is $22,000, which is di
 
 The very foundation of communication is that multiple parties agreeing on something to begin with, e.g. "apple" means apple. And usually the goal of communication is that we expand consensus. At the very beginning, who decide apples are called "apples"? Someone must name it first and others went along. That's why when we communicate, we make a lot of assumptions, e.g. "apples" means apples, everyone is using decimals, etc. These assumptions are usually fine and it makes communication much more efficient. But when we run into conflicts, we should re-think our assumptions.
 
-![Screen-Shot-2020-05-23-at-10.14.40-AM]( __GHOST_URL__ /content/images/2020/05/Screen-Shot-2020-05-23-at-10.14.40-AM.png)
+![](/assets/math2.png)
 
 If I were the teacher, I should think about did I miss anything from the parents? Can 2 + 2 = 22 in some cases (the answer is yes). Am I making assumptions but not being explicit about them? And the same thing applies to the parents and others in the film.
 

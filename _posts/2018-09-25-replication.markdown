@@ -20,10 +20,10 @@ Query pattern and client consistency/availability requirements are intentionally
 
 Example: [Calvin](cs.yale.edu/homes/thomson/publications/calvin-sigmod12.pdf), [Spanner](https://research.google.com/archive/spanner-osdi2012.pdf)
 
-_I also have another post [explaining single decree Paxos]( __GHOST_URL__ /paxos-explained/)._
+_I also have another post [explaining single decree Paxos](/paxos-explained/)._
 
 Before talking about Paxos in detail, let's have a quick look at synchronous replication. The most straightforward synchronous replication setup is to write to all three copies, before acknowledging the client write query.  
- ![Screen-Shot-2018-09-25-at-11.07.02-AM]( __GHOST_URL__ /content/images/2018/09/Screen-Shot-2018-09-25-at-11.07.02-AM.png)  
+ ![](/assets/replication1.png)
 All writes are serialized on the single leader and synchronously replicated to the other two followers. And it provides CAP Consistency (a.k.a linearizability). I will define [fault tolerant](https://en.wikipedia.org/wiki/State_machine_replication) to be that clients will not notice failures of minority nodes, and the system will operate as if all nodes are running healthy. Apparently synchronous replication is not fault tolerant, not even close to CAP Available.
 
 Paxos replication differs from the simple synchronous replication in two ways. First, it only requires talking to the majority of the nodes instead of all of them. Second, it's a two phase protocol, instead of a single phase protocol. Also when we say "Paxos Replication", it usually means Multi-Paxos, for replicating a log of actions. Multi-Paxos itself is loosely defined, since there are many different ways of doing it. The gist is to run single Paxos for each slot of the log entry.
@@ -35,7 +35,7 @@ Paxos replication is a form of synchronous replication with fault tolerance. It'
     X = 10;
     Y = X + 8;
 
-I just lied, sort-of. CAP Consistency is not necessarily required to make `Y == 18`. Read-what-you-wrote is enough if reading `X` is on the same process of writing `X`. We will discuss read-what-you-wrote very soon. But read-what-you-wrote has its obvious limitation, specifically on the "you" part. **CAP consistency is effectively read-what-everyone-wrote**. So in the example above, if the process writing `X` is not the same that's reading `X`, and there's a [happened-before]( __GHOST_URL__ /time-and-order/) ordering between the two, read-what-you-wrote is not sufficient.
+I just lied, sort-of. CAP Consistency is not necessarily required to make `Y == 18`. Read-what-you-wrote is enough if reading `X` is on the same process of writing `X`. We will discuss read-what-you-wrote very soon. But read-what-you-wrote has its obvious limitation, specifically on the "you" part. **CAP consistency is effectively read-what-everyone-wrote**. So in the example above, if the process writing `X` is not the same that's reading `X`, and there's a [happened-before](/time-and-order/) ordering between the two, read-what-you-wrote is not sufficient.
 
 CAP Consistency is the best you can ask for. A distributed database will work as if there's only one replica. It doesn't get better than this. (Spanner offers external consistency, which is similar.)
 
@@ -60,7 +60,7 @@ Paxos replication is great for multi-tenant database, thanks to its strong consi
 Example: [MySQL](https://www.mysql.com/), [PostgresSQL](https://www.postgresql.org/)
 
 This is probably the single most popular setup in the industry as far as I can tell, thanks to the wide adoption of MySQL and other very well-built relational databases.  
- ![Screen-Shot-2018-09-25-at-12.11.47-PM]( __GHOST_URL__ /content/images/2018/09/Screen-Shot-2018-09-25-at-12.11.47-PM.png)  
+ ![](/assets/replication2.png)
 In this case, the _red_ line is client write query, and _blue_ lines are asynchronous replication from leader to followers.
 
 #### Consistency

@@ -15,7 +15,7 @@ Functionally speaking, an instance of Aurora is same as an instance of MySQL. Th
 
 ## High Level Design
 
-![Screen-Shot-2019-02-23-at-10.24.31-PM]( __GHOST_URL__ /content/images/2019/02/Screen-Shot-2019-02-23-at-10.24.31-PM.png)
+![](/assets/aurora.png)
 
 The main idea behind Aurora is that the _database is the log_. It disaggregates the storage, calling SQL engine and log the _database_, caching and storage the _storage_. On writes, the database replicates its log. And the application of updates from the redo log to storage is asynchronous. Storage is responsible of its own replication for durability and consistency.
 

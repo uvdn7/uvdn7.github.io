@@ -10,7 +10,7 @@ tags:
 
 Paxos, is the famous synonym for consistency in the context of distributed system. Unfortunately, _consistency_ alone, is such an overloaded term, it's often practically meaningless. In this post, I will explain the difference between Paxos-consistency vs. quorum-consistency.
 
-I assume you know what Paxos is and what problem it solves. If you need a quick refresher, or you are in the mood of trying to read about a new way of explaining how Paxos works, click this [link]( __GHOST_URL__ /understanding-paxos/).
+I assume you know what Paxos is and what problem it solves. If you need a quick refresher, or you are in the mood of trying to read about a new way of explaining how Paxos works, click this [link](/understanding-paxos/).
 
 When I say quorum-based consistency, I mean systems like Dynamo, Cassandra, etc. that claim to support "strong" consistency when you read and write to a quorum of the replica. E.g. if a shard has a replication factor of 3, we say read and write has quorum if every time you write to 2 replicas and read from at least 2 replicas synchronously. It seems straightforward. You always read the latest value – "strong consistency" (hopelessly overloaded). Or really?
 

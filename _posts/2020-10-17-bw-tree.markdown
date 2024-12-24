@@ -11,7 +11,6 @@ Traditional B-Tree has a few noticeable downsides e.g. heavy disk IO (for in-pla
 
 [BW-Tree](https://www.microsoft.com/en-us/research/publication/the-bw-tree-a-b-tree-for-new-hardware/)([https://www.microsoft.com/en-us/research/publication/the-bw-tree-a-b-tree-for-new-hardware/](https://www.microsoft.com/en-us/research/publication/the-bw-tree-a-b-tree-for-new-hardware/)) is a B-Tree variant proposed by Microsoft in 2013.
 
-<figure class="kg-card kg-image-card"><img src=" __GHOST_URL__ /content/images/2020/10/Untitled-1.png" class="kg-image" alt loading="lazy"></figure>
 ## Characteristics 
 
 - Base nodes (regular BTree nodes) are immutable

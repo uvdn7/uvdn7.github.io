@@ -9,7 +9,7 @@ tags:
 
 Paxos in one hand is very concise. It fits in a single slide.
 
-<figure class="kg-card kg-image-card kg-card-hascaption"><img src=" __GHOST_URL__ /content/images/2019/09/Screen-Shot-2018-11-13-at-11.53.52-PM.png" class="kg-image" alt loading="lazy"><figcaption>Paxos algorithm (https://blog.the-pans.com/paxos-explained/)</figcaption></figure>
+![paxos](/assets/paxos.png)
 
 On the other hand, Paxos is notoriously hard to apprehend. In this post, I will explain Paxos as a read-modify-write transaction, which is much more intuitive in my opinion.
 
@@ -25,7 +25,7 @@ Ballot number (a.k.a proposal id), is used to resolve the read-modify-write race
 
 ## Preliminaries
 
-**Ordering** [https://blog.the-pans.com/time-and-order/]( __GHOST_URL__ /time-and-order/)
+**Ordering** [https://blog.the-pans.com/time-and-order/](/time-and-order/)
 
 Distributed system is all about ordering. "Time" to a computer, is just a sequence of ordered events. Computer speaks the language of events. On the other hand, "Time" is a more intuitive concept to us than logical clock (a.k.a version). To help us apprehend a distributed system, we can **treat a totally ordered sequence of events as the time axis** in our distributed system universe.
 
@@ -41,7 +41,7 @@ The bug here is that both threads can read the value e.g. 4 in step(1) both bump
 
 There're various ways of implementing read-modify-write transactions. E.g. you can take an exclusive lock like in 2pc, or you can take a _lease_ on _read_ and fail the _write_ operation if a race is detected. Memcached uses _lease_ to implement CAS (a.k.a Compare-and-set), which is just a synonym for read-modify-write.
 
-**Consensus** [https://blog.the-pans.com/paxos-explained/]( __GHOST_URL__ /paxos-explained/)
+**Consensus** [https://blog.the-pans.com/paxos-explained/](/paxos-explained/)
 
 <!--kg-card-begin: markdown-->
 
@@ -65,7 +65,7 @@ Let's dive in!
 
 If there's only one Proposer, achieving consensus is simple!
 
-<figure class="kg-card kg-image-card kg-card-hascaption"><img src=" __GHOST_URL__ /content/images/2019/09/2019-09-14-09.56.15.jpg" class="kg-image" alt loading="lazy"><figcaption>Single Proposer</figcaption></figure>
+![single proposer](/assets/single_proposer_diagram.jpg)
 
 Another name for this single Proposer is the _Leader_. Most implementations of Multi-Paxos has the concept of Leader, who's the only one sending out proposals. The benefit of a stable leader is that you only need one round-trip to get consensus.
 
@@ -79,7 +79,7 @@ Remember ordering is our friend in distributed system. We can order "leadership"
 
 Let's say we have three Proposers, `p0`, `p1` and `p2`. Their own proposals are totally ordered locally, e.g. `(1, p0) -> (2, p0) -> (3,p0)`. If we impose a "hard-coded" ordering between Proposers, `p0 < p1 < p2`, we get a total ordering of all proposals.
 
-<!--kg-card-end: markdown--><figure class="kg-card kg-image-card kg-card-hascaption"><img src=" __GHOST_URL__ /content/images/2019/09/2019-09-14-10.08.29.png" class="kg-image" alt loading="lazy"><figcaption>A total ordering of Terms</figcaption></figure>
+![paxos total ordering](/assets/paxos_total_ordering.png)
 
 <!--kg-card-begin: markdown-->
 
@@ -89,7 +89,7 @@ This is the clock of our system. Instead of thinking of them as proposals, we ca
 
 Now the algorithm looks like:
 
-<figure class="kg-card kg-image-card kg-card-hascaption"><img src=" __GHOST_URL__ /content/images/2019/09/2019-09-14-10.20.32.png" class="kg-image" alt loading="lazy"><figcaption>Proposer with terms</figcaption></figure>
+![](/assets/proposer_with_terms.png)
 
 The only difference between this and the single Proposer is that we added _term_ in the Accept request. We need to relax the single Proposer restriction. But this obviously doesn't work for more than one Proposers, as the second Proposer can overwrite the chosen value proposed by the first Proposer, which violates the Safety requirement.
 
@@ -97,7 +97,7 @@ The only difference between this and the single Proposer is that we added _term_
 
 We added _term_, but haven't used it yet. Acceptor can use the information to have a local view of leadership over time.
 
-<figure class="kg-card kg-image-card kg-card-hascaption"><img src=" __GHOST_URL__ /content/images/2019/09/Screen-Shot-2019-09-14-at-10.26.11-AM-1.png" class="kg-image" alt loading="lazy"><figcaption>Acceptor's view of leadership over time</figcaption></figure>
+![](/assets/leadership_over_time.png)
 
 > Invariant(1): The Acceptor should only accept value from the latest leader.
 
@@ -105,7 +105,7 @@ We added _term_, but haven't used it yet. Acceptor can use the information to ha
 
 If this Acceptor gets an Accept request for term `(4, p3)`, it can simply reject it because `p3` is no longer the latest leader. `p2` is.
 
-<!--kg-card-end: markdown--><figure class="kg-card kg-image-card kg-card-hascaption"><img src=" __GHOST_URL__ /content/images/2019/09/2019-09-14-10.35.43.png" class="kg-image" alt loading="lazy"><figcaption>Reject values from previous leaders</figcaption></figure>
+![](/assets/reject.png)
 
 This algorithm still suffers from the problem that a newer leader can overwrite a previously chosen value.
 
@@ -115,7 +115,7 @@ This algorithm still suffers from the problem that a newer leader can overwrite 
 
 Now each Acceptor has a local view of leadership over time that looks like:
 
-<figure class="kg-card kg-image-card"><img src=" __GHOST_URL__ /content/images/2019/09/2019-09-14-10.46.36-1.png" class="kg-image" alt loading="lazy"></figure>
+![](/assets/leadership_overtime_2.png)
 
 Based on our current algorithm, for each term there's a value associated with it.
 
@@ -127,7 +127,7 @@ We want to make sure that if a value is already _chosen_, the Proposer should ch
 
 How do we know which value is chosen? We know, by definition, that if a value is chosen, it must be accepted by the majority Acceptors, in which case, if the Proposer reads from the majority Acceptors the chosen value must be in at least one of the responses. (This is exactly why we only need quorum of phase 1 and quorum of phase 2 to intersect for Paxos correctness. This is also called [Flexible Paxos](https://fpaxos.github.io/).)
 
-<figure class="kg-card kg-image-card kg-card-hascaption"><img src=" __GHOST_URL__ /content/images/2019/09/2019-09-14-11.27.14.png" class="kg-image" alt loading="lazy"><figcaption>Two majority sets must overlap</figcaption></figure>
+![](/assets/overlap.png)
 
 How do we tell the chosen value v, from the rest of the accepted values? We can sort the accepted values by terms, in which they are accepted. We can come up with an algorithm so that,
 
@@ -135,7 +135,7 @@ How do we tell the chosen value v, from the rest of the accepted values? We can 
 
 From invariant(2), it's not hard to get that if a value is chosen, it must be the value of the proposal of the highest term from a quorum of Acceptors. Thanks to the intersection requirement, at least one of the Acceptors must have accepted the chosen value with term \>= N (when the value is chosen). All proposals with term \< N are not chosen and we don't care about them. So if a value is chosen, a Proposer can find it out by just talking to a quorum of Acceptors.
 
-<figure class="kg-card kg-image-card kg-card-hascaption"><img src=" __GHOST_URL__ /content/images/2019/09/2019-09-14-11.51.22.png" class="kg-image" alt loading="lazy"><figcaption>Read-modify-write take 1</figcaption></figure>
+![](/assets/rmw-take-1.png)
 
 Why invariant(2) holds for this algorithm? For any chosen value, there exists a term N that no value is chosen for terms \<N. N is the first term when a value is chosen. If N = 1, the algorithm above is obviously correct. For N != 1, we don't care about the proposal with term \<N. Thanks again to the intersection requirement (between phase 1 and phase 2), we know at least one Acceptor must have accepted the chosen value at term N, and it's the highest term at that moment. Following the algorithm, all future proposals with be proposing the chosen value, for terms \>N.
 
@@ -154,7 +154,7 @@ A typical way to resolve a read-modify-write race is by putting an exclusive loc
 
 You guessed it, we can solve the race by leveraging our best friend, the fact that terms are globally totally ordered. Proposer can set the latest term on Acceptors on read, and Acceptor can use this `latest_term` to detect read-modify-write race.
 
-<figure class="kg-card kg-image-card kg-card-hascaption"><img src=" __GHOST_URL__ /content/images/2019/09/2019-09-14-12.09.38.png" class="kg-image" alt loading="lazy"><figcaption>Paxos</figcaption></figure>
+![](/assets/rmw-take2.png)
 
 This is exactly Paxos. It's the same as the slide I showed at the top of this post.
 
@@ -181,7 +181,7 @@ Phase two serves the purpose of
 
 Each Acceptor tracks the latest term it has seen, but for some term, there might not be an accepted value associated.
 
-<figure class="kg-card kg-image-card kg-card-hascaption"><img src=" __GHOST_URL__ /content/images/2019/09/2019-09-14-10.59.36.png" class="kg-image" alt loading="lazy"><figcaption>Acceptor's view of leadership over time</figcaption></figure>
+![](/assets/leadership_overtime_3.png)
 
 It's possible that there are two Proposers, each talking to `F` disjoint hosts in the cluster and contending on the single overlapping host. In theory, it's possible for these two Proposers to compete forever bumping the `latest_term` on the last Acceptor without letting it accept any value. In practice, the Proposer can select a somewhat random term id in the future, so that the probability of two Proposers contending forever on a single host is zero.
 

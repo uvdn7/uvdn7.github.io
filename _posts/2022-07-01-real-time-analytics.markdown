@@ -17,7 +17,7 @@ Data generated from the customers are often schemaless (e.g. JSON), but fast SQL
 
 ## Vectorized query engine
 
-The overall strategy taken by Rockset is very similar to Databricks' [Photon]( __GHOST_URL__ /photon/), as both use vectorized query engines. The query engine operates against a batch (array) of inputs of a specific type, so C++ templates can be specialized for fast execution in those tight loops inside the query engine. Rockset infers the type by examining the query text and column names.
+The overall strategy taken by Rockset is very similar to Databricks' [Photon](/photon/), as both use vectorized query engines. The query engine operates against a batch (array) of inputs of a specific type, so C++ templates can be specialized for fast execution in those tight loops inside the query engine. Rockset infers the type by examining the query text and column names.
 
 Vectorization is a good fit for dynamic schemaless workloads because you can batch type checks (e.g. here's an array of integers) before dispatching the work to the query engine, compared to doing type checks per row.
 

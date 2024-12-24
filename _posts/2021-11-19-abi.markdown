@@ -11,7 +11,7 @@ tags:
 
 ## **Only the essential**
 
-Let's start from the _very_ basics. Stripping away all the unessential abstractions, how does a program work? I write some machine code (instructions) and the code runs on some hardware (ALU, Program Counter, registers, memory, instruction register, instruction decoder, clock). Done. No compiler, no operating system, _no stack_ even. A real world example is an[8-bit computer on a breadboard]( __GHOST_URL__ /8-bit-breadboard-computer/) I built following Ben Eater's videos. It just runs pre-installed instructions. It's very straightforward. No ABI whatsoever. The following thought experiment is built on top of this 8 bit breadboard computer.
+Let's start from the _very_ basics. Stripping away all the unessential abstractions, how does a program work? I write some machine code (instructions) and the code runs on some hardware (ALU, Program Counter, registers, memory, instruction register, instruction decoder, clock). Done. No compiler, no operating system, _no stack_ even. A real world example is an[8-bit computer on a breadboard](/8-bit-breadboard-computer/) I built following Ben Eater's videos. It just runs pre-installed instructions. It's very straightforward. No ABI whatsoever. The following thought experiment is built on top of this 8 bit breadboard computer.
 
 ## **Add stack and function**
 

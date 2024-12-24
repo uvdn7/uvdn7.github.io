@@ -33,7 +33,7 @@ Usually cache is deployed for improving read/write performance. _Performance_ he
 
 #### Look-aside / demand-fill cache
 
-![Screen-Shot-2018-08-10-at-2.52.18-PM]( __GHOST_URL__ /content/images/2018/08/Screen-Shot-2018-08-10-at-2.52.18-PM.png)  
+![](/assets/caching1.png)
 For look-aside cache, client will query cache first before querying the data store. If it's a HIT, it will return the value in cache. If it's a MISS, it will return the value from data store. That's it. It says nothing about how the cache should be filled. It just specifies how it would be queried. But usually, it's demand-fill. Demand-fill means in the case of MISS, client will not only uses the value from data store, but also puts that value into cache. Usually if you see a look-aside cache, it's also a demand-fill cache. But it doesn't have to be. E.g. you can have both cache and data store subscribe to the same log (e.g. [Kafka](https://kafka.apache.org/)) and materialize independently. This is a very reasonable setup. And the cache in this case is a look-aside cache but not demand-fill. And the cache can even have fresher data than the durable data store.
 
 Simple, right? However **simple Look-aside/demand-fill cache can have permanent inconsistency!** This is often overlooked by people due to the simplicity of look-aside cache. Fundamentally because when client PUT some value into cache, the value can already be stale. Concretely for example
@@ -56,18 +56,18 @@ Things are consistent again :)
 
 #### Write-through / read-through cache
 
-![WechatIMG2]( __GHOST_URL__ /content/images/2018/08/WechatIMG2.jpeg)  
+![](/assets/caching2.jpeg)
 Write-through cache means for mutation, client writes to cache directly. And cache is responsible of synchronously write to the data store. It doesn't say anything about reads. Clients can do look-aside reads or read-through.
 
 Read-through cache means for reads, client reads directly from cache. And if it's a MISS, cache is responsible of filling the data from data store and reply to client's query. It doesn't say anything about writes. Clients can do demand-fill writes to cache or write-through.
 
 Now you get a table looks like  
- ![Screen-Shot-2018-08-10-at-3.21.50-PM]( __GHOST_URL__ /content/images/2018/08/Screen-Shot-2018-08-10-at-3.21.50-PM.png)  
+ ![](/assets/caching3.png)
 _TAO ([TAO: Facebook’s Distributed Data Store for the Social Graph](https://www.usenix.org/system/files/conference/atc13/atc13-bronson.pdf)) for example is a read-through & write-through cache._
 
 It's not very common to have write-through & look-aside cache. Since if you have already built a service that sits in the middle of client and data store, knows how to talk to the data store, why not do it for both read and write operations. That being said, with limited cache size, a write-through & look-aside cache might be the best thing for hit ratio depending on your query pattern. E.g. if most reads would follow immediately after the write, then a write-through & look-aside cache might provide the best hit ratio. Read-through & demand-fill doesn't make sense.
 
-Now let's take a look at the consistency aspect of write-through & read-through cache. For single box problem, as long as `update-lock` for `write` and `fill-lock` for `read` are grabbed properly, read and writes to the same key can be serialized and it's not hard to see that cache consistency will be maintained. If there are many replicas of cache, it becomes a distributed system problem, which a few potential solutions might exist. The most straightforward solution to keep multiple replicas of cache consistent is to have a log of mutations/events and update cache based on that log. This log serves the purpose of single point of serialization. It can be Kafka or even [MySQL binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html). As long as mutations are globally total ordered in a way that's easy to replay these events, eventual cache consistency can be maintained. Notice that the reasoning behind this is the same as _[synchronization in distributed system]( __GHOST_URL__ /state-machine-and-sync/)_.
+Now let's take a look at the consistency aspect of write-through & read-through cache. For single box problem, as long as `update-lock` for `write` and `fill-lock` for `read` are grabbed properly, read and writes to the same key can be serialized and it's not hard to see that cache consistency will be maintained. If there are many replicas of cache, it becomes a distributed system problem, which a few potential solutions might exist. The most straightforward solution to keep multiple replicas of cache consistent is to have a log of mutations/events and update cache based on that log. This log serves the purpose of single point of serialization. It can be Kafka or even [MySQL binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html). As long as mutations are globally total ordered in a way that's easy to replay these events, eventual cache consistency can be maintained. Notice that the reasoning behind this is the same as _[synchronization in distributed system](/state-machine-and-sync/)_.
 
 #### Write-back / memory-only cache
 

@@ -6,7 +6,7 @@ tags:
 - distributed-system
 ---
 
-_This is the second of two notes of Lamport's Time-Clock paper<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>. The first one is [here]( __GHOST_URL__ /time-and-order/)._
+_This is the second of two notes of Lamport's Time-Clock paper<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>. The first one is [here](/time-and-order/)._
 
 ## The problem
 
@@ -29,7 +29,7 @@ This works. But it has a few downsides.
 
 ## A distributed solution
 
-![Paper.Sketches.1]( __GHOST_URL__ /content/images/2018/04/Paper.Sketches.1.png)
+![](/assets/sm1.png)
 
 1. Every process sends _request resource_ (timestamped) to everyone, and stores the request locally.
 2. Upon receiving the _request_, each process stores the request and sends an ACK (timestamped) to the sender.
@@ -37,7 +37,7 @@ This works. But it has a few downsides.
 4. To release the resource, _Pi_ sends _release resource_ (timestamped) to everyone, and removes any `req:Pi` locally stored.
 5. Upon receiving the _release_, each process also removes any `req:Pi` from the local store.
 
-![Paper.Sketches.2]( __GHOST_URL__ /content/images/2018/04/Paper.Sketches.2.png)
+![](/assets/sm2.png)
 
 _(There are a few assumptions made to make describing the algorithm simpler. E.g. messages are sent and received in order.)_
 

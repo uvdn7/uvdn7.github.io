@@ -39,8 +39,6 @@ However it complains that gflag is redefined.
 
 `folly/portability/GFlags.h` depends on a macro called `FOLLY_HAVE_LIBGFLAGS` to tell if gflag is available or not. But we clearly have just installed gflag. If you grep this macro, you see that it's in the generated `folly-config.h` header file.
 
-![Screenshot_2020-09-14_23-05-48]( __GHOST_URL__ /content/images/2020/09/Screenshot_2020-09-14_23-05-48.png)
-
 Turns out what happened was that I ran `cmake` once before gflag was properly installed in the `folly` directory, and it put a generated `folly-config.h` in `folly/` directly. Because the file is in the `.gitignore` list, I missed it from `git status`. That's why even after `gflag` is properly installed, the `folly-config.h` in `bin` directory was always masked by the previous generated one in `folly/` directory.
 
 The fix is simple. I just deleted the `bin/` directory and ran `cmake` in `folly/` which overwrote the previous bad `folly-config.h` file, and fixed all the problems.

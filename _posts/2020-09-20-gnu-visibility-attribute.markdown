@@ -106,15 +106,15 @@ Dynamic library (a.k.a shared library) is lazily loaded at runtime. It has the b
     clang++ main.cpp libfoo.so
     objdump -D a.out -t -s -M intel
 
-<!--kg-card-end: markdown--><figure class="kg-card kg-image-card"><img src=" __GHOST_URL__ /content/images/2020/09/Screenshot_2020-09-20_15-13-08.png" class="kg-image" alt loading="lazy"></figure>
+![gnu visibility 1](/assets/gnu-visibility-1.png)
 
 This is where foo gets called.
 
-<figure class="kg-card kg-image-card"><img src=" __GHOST_URL__ /content/images/2020/09/Screenshot_2020-09-20_15-14-14.png" class="kg-image" alt loading="lazy"></figure>
+![gnu visibility 2](/assets/gnu-visibility-2.png)
 
 It looks up the Global Offset Table, where it would find out that it needs to load libfoo.so to resolve symbol foo. As expected, string "libfoo.so" is in the final binary.
 
-<figure class="kg-card kg-image-card"><img src=" __GHOST_URL__ /content/images/2020/09/Screenshot_2020-09-20_15-17-37.png" class="kg-image" alt loading="lazy"></figure><!--kg-card-begin: markdown-->
+![gnu visibility 3](/assets/gnu-visibility-3.png)
 ## Summary
 
 To summarize, ` __attribute__ ((visibility("default")))` is often used in a shared library, and expected to be compiled with `-fvisibility=hidden` (though it doesn't have to). Symbols with "default" visibility will always be public outside of the shared library itself. You would often find it set on public interfaces of a shared library (including exceptions).

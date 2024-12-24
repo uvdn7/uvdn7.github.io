@@ -26,16 +26,15 @@ If a stateful service considers version `0` is less than version `65535`, either
 #### Circle instead of axis
 
 The versions instead of increasing on an axis, they go around on a circle.  
- ![Screen-Shot-2019-03-12-at-9.36.06-PM]( __GHOST_URL__ /content/images/2019/03/Screen-Shot-2019-03-12-at-9.36.06-PM.png)
+ ![](/assets/version1.png)
 
 Comparing two versions on an axis is simple. The one on the right is the greater one. How do we compare two versions on a circle? We can't.
 
 Let's consider the following example. Which one is greater? `A` or `B`?  
- ![Screen-Shot-2019-03-12-at-9.48.28-PM]( __GHOST_URL__ /content/images/2019/03/Screen-Shot-2019-03-12-at-9.48.28-PM.png)
+ ![](/assets/version2.png)
 
 If we consider `A` is greater, which means it happened _after_ `B`, the gap between `A` and `B` is bigger. If considering `B` greater than `A`, the gap is smaller.  
- ![Screen-Shot-2019-03-12-at-9.53.30-PM]( __GHOST_URL__ /content/images/2019/03/Screen-Shot-2019-03-12-at-9.53.30-PM.png)
-
+ ![](/assets/version3.png)
 We cannot compare `A` and `B` without making assumptions. But if we assume that we are only comparing events that happened _close_ to each other, we know `B` should be greater than `A`. This is a reasonable assumption to make as versions are often only used to order recent events during a racing window. It's unlikely that more than `2^15` events happened in a small racing window.
 
 #### How to compute it

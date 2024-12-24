@@ -11,7 +11,7 @@ tags:
 - network
 ---
 
-I previously wrote a post on reasoning [DNS as a distributed database]( __GHOST_URL__ /dns/). In the same spirit, today, let's take a look at IP as distributed data (the Internet would be a distributed database in this analogy). This is inspired by a very interesting blog post from Cloudflare, [https://blog.cloudflare.com/cloudflare-servers-dont-own-ips-anymore/](https://blog.cloudflare.com/cloudflare-servers-dont-own-ips-anymore/), talking about how they save egress IP addresses.
+I previously wrote a post on reasoning [DNS as a distributed database](/dns/). In the same spirit, today, let's take a look at IP as distributed data (the Internet would be a distributed database in this analogy). This is inspired by a very interesting blog post from Cloudflare, [https://blog.cloudflare.com/cloudflare-servers-dont-own-ips-anymore/](https://blog.cloudflare.com/cloudflare-servers-dont-own-ips-anymore/), talking about how they save egress IP addresses.
 
 IP addresses are just names. Most commonly, a single IP address is mapped to a single physical host. This name-\>host map is stored and distributed among a set of routers. Conceptually, every time one routes a datagram with destination address X, it's conceptually performing a database lookup for key X against this massive distributed database (what we call the Internet). This analogy is not perfect (and it doesn't have to be) as IP is for routing packets instead of storing/fetching values. However, at a certain angle, "sending a datagram to IP address X" is no different than "fetching key X from a distributed system" as _both have to resolve where X is located at_.
 
