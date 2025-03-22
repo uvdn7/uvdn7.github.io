@@ -1,0 +1,42 @@
+---
+layout: post
+title: A Mental Model for C++ Coroutine
+tags:
+- cpp
+- coroutine
+---
+
+C++ coroutine is not a library that is ready to go (e.g. `std::vector`). It is not even a trait (think of Rust's `Future` trait) that library writers or users can implement (or the compiler generates for you in the case of Rust). C++ coroutine is a specification that defines a set of customization points, that requires library writers to implement in order to get a functional coroutine.
+
+A function supports two operations - `call` and `return`. A corotuine (in any language) is a generalization of a function. It supports `suspend`, `resume`, and `destroy` in addition of `call` and `return` [^1]. By this definition, C++ coroutine, Rust Future, are both coroutines. C++ coroutine provides customization points around `call`, `return`, `suspend`, and `resume`; it exposes a handle that allows users to explicitly `destroy` a coroutine as well.
+
+## Example
+
+Here is what a potential coroutine `add` could look like. All it does is sleep one second, add two numbers and return the result. `add` should suspend at `co_await` and resume execution once `co_sleep(1)` completes.
+
+    Task<int32_t> add(int32_t a, int32_t b) {
+        uint32_t actualSleepSec = co_await co_sleep(1);
+        co_return a + b;
+    }
+
+    Task<uint32_t> co_sleep(uint32_t sec) {
+        // ...
+    }
+
+
+Similar to many other languages, the presence of the keyword `co_await` signals that `add` is a coroutine. Let us pretend to be a compiler for a second, the only thing that can be used to customize the behavior of the coroutine is really just the return type `Task<T>`. And indeed that is where C++ extracts the `promise_type` to start the customization process. We will cover more about the `promise_type` later in the post.
+
+### The Obvious/Rust Approach
+An obvious option here is to make `Task<T>` a subclass of some language defined interface (which owns the coroutine frame[^2] for storing state across `co_await` points), where a set of customization points can be implemented as member functions to specify the behavior of this coroutine. If we lump everything into a single class (`Task<T>` in this case), `resume`, will be part of the public interface as well (usually `suspend` only takes place at well defined await points), as one need to be able to resume the coroutine somehow, just like Rust's `Future::poll`. How does a coroutine know it is ready to be resumed? In the Rust's case, it essentially passes a callback to the `Future`. The callback will resume (`poll`) the `Future` when its dependency is satisfied. In our example, the callback will resume the `add` coroutine after `co_sleep` is complete. But it still needs to somehow pass the return value from `co_sleep` to the caller. Rust solves this problem by passing the callback all the way from the top-most `Future` to the bottom `Future`, and whenever the state changes (because e.g. a network reply is received), it invokes the callback to reschedule the entire Future chain. In our example, the return value from `co_await co_sleep(1);` will be acquired on the next `poll`. This is a good way of modeling async computation. C++'s coroutine spec, which we will see in a minute is way more flexible. Actually it is so flexible that we can implement Rust Future's poll-based semantics (barring the compile transformation of each Future's state machine) with C++ coroutine.
+
+
+### The `promise_type`
+As we observed earlier, the return type `Task<T>` is the best entry-point for users to customize coroutine behaviors. C++ coroutine requires a `Task<T>::promise_type` type be defined. It serves a few purposes
+1. the promise type can specify the coroutine behavior - what happens can `add` is called, before `add` returns, etc.
+2. the promise object (of the promise type) can be used to store additional state in the coroutine frame
+
+Once defined, C++ will automatically create a promise object for you, which lives inside the coroutine frame.
+
+
+[^1]: https://lewissbaker.github.io/2017/09/25/coroutine-theory
+[^2]: a coroutine frame is where the async stackframe lives (conceptually on heap), and where additional state is kept for resuming the coroutine later
