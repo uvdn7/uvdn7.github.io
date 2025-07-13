@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Integer Division in Bucketed Timeseries
+title: Integer Division in Bucketed Time Series
 tags:
 - cpp
 ---
