@@ -58,4 +58,4 @@ If duration is divisible by `bucket_size`, the expression equals `bucket_idx`. O
 `(ceil(bucket_idx * duration / bucket_size) - 1) * bucket_size` falls in `[bucket_idx * duration - bucket_size, bucket_idx * duration)`. The left equality can be achieved when duration is divisible by `bucket_size`. It will always be strictly less than `bucket_idx * duration` again because of the `bucket_size <= duration` invariant. Hence the expression equals `bucket_idx - 1`.
 equals bucket_idx - 1.
 
-I just found this floor/ceiling division pair really elegant and beautiful. For posterity, the proof is later committed as comment [here](https://github.com/facebook/folly/blob/main/folly/stats/BucketedTimeSeries-inl.h#L392-L417).
+I just found this floor/ceiling division pair really elegant and beautiful. For posterity, the proof is later committed as a comment [here](https://github.com/facebook/folly/blob/main/folly/stats/BucketedTimeSeries-inl.h#L392-L417). Funny enough, [AI claims](https://chatgpt.com/share/687529f8-643c-8004-835a-3a524d1e253a) `floor(ceil(a/b) * b/a) = 1` always holds.
