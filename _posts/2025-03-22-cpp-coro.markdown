@@ -56,8 +56,6 @@ In the first case, there is no dependency/awaitable. In the second case, it woul
 
 `final_suspend` returns an awaiter object. We have seen Awaiter already - `suspend_always` _is_ an empty awaiter type that has `await_ready` returns false always. It is conceptually equivalent to putting `co_await final_suspend();` right before the end. `await_suspend` can be customized for the final awaiter object, which will again have a handle to the current coroutine, where we can extract the promise object with whatever state we put in.
 
-We are making a big assumption here that every awaitable itself is also a coroutine. It is likely true most of the time. To make it true all the time, it is where `await_transform` comes in. It provides yet another customization point. It allows the coroutine to transform (usually wrap) the expression in `co_await expr;` into an awaitable.
-
 
 [^1]: https://lewissbaker.github.io/2017/09/25/coroutine-theory
 [^2]: a coroutine frame is where the async stackframe lives (conceptually on heap), and where additional state is kept for resuming the coroutine later
